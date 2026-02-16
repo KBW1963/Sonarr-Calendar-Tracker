@@ -6,33 +6,38 @@ Now with refresh interval in hours and platform detection
 
 Version History:
 ===============
-v1.0.0 (2024-01-01) - Initial release
+v1.0.0 
+  - Initial release
   - Basic configuration GUI
   - Sonarr connection settings
   - Date range configuration
   - File path configuration
   - Refresh interval in hours
 
-v1.1.0 (2024-01-10) - Platform detection and path improvements
+v1.1.0 
+  - Platform detection and path improvements
   - Added platform detection (Windows/Linux/macOS)
   - Platform-specific default paths
   - Cross-platform directory handling
   - Added window centering
 
-v1.2.0 (2024-01-12) - Connection testing
+v1.2.0 
+  - Connection testing
   - Added requests library integration
   - Sonarr connection testing
   - API key visibility toggle
   - Connection status display
 
-v1.3.0 (2024-01-14) - UI improvements
+v1.3.0 
+  - UI improvements
   - Added emoji icons for better UX
   - Improved error messages
   - Configuration validation
   - Configuration summary dialog
   - Status bar with feedback
 
-v2.1.0 (2024-01-15) - Mouse cut/copy/paste functionality
+v2.1.0 
+  - Mouse cut/copy/paste functionality
   - Added right-click context menu for all input fields
   - Custom EntryWithMenu, SpinboxWithMenu, ComboboxWithMenu classes
   - Cross-platform clipboard support (Windows/Linux/macOS)

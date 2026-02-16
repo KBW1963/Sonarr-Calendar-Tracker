@@ -337,7 +337,7 @@ class SonarrConfigApp:
         footer_frame.grid(row=23, column=0, columnspan=4, pady=(5, 0))
         
         version_label = ttk.Label(footer_frame, 
-                                 text="Version 2.1.0 | Released: 2024-01-15 | Right-click for cut/copy/paste",
+                                 text="Version 2.1.0",
                                  font=('Arial', 8), foreground='gray')
         version_label.pack()
         

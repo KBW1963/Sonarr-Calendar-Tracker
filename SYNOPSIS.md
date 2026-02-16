@@ -2,7 +2,7 @@
 ## **SYNOPSIS.md**
 # Project Synopsis – Sonarr Calendar Tracker
 
-It is intended for for those who want to understand the internal structure. The document explains the purpose of each script/module in the project. 
+It is intended for those who want to understand the internal structure. The document explains the purpose of each script/module in the project. 
 
 ## 📁 `src/sonarr_calendar/` – Main package
 

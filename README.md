@@ -12,7 +12,7 @@ Track upcoming episodes, monitor overall progress, and see which seasons have be
 
 ## ✨ Features
 
-- 📅 **Customisable date range** – Choose how many days past and future to display.
+- 📅 **Customisable date range** – Choose how many days past and future to display (configurable).
 - 🖼️ **Poster image caching** – Images are downloaded and stored locally for faster loading.
 - 🎨 **Dark/light theme toggle** – Switch between themes with a click (your choice is saved in your browser).
 - 📊 **Overall & per‑show progress** – See at a glance how much of your library is downloaded, and drill down into each series.
@@ -26,7 +26,7 @@ Track upcoming episodes, monitor overall progress, and see which seasons have be
 
 ## 📦 Requirements
 
-- **Python 3.8 or higher**
+- **Python 3.8 or higher** - requests>=2.28.0; jinja2>=3.1.0; colorama>=0.4.6   # optional, for cross‑platform colored output
 - **Sonarr** (v3 or v4) with API access
 - Operating systems: Windows, macOS, Linux (all fully supported)
 

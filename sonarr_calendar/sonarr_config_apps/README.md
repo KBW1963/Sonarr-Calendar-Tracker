@@ -1,7 +1,7 @@
 # Sonarr Calendar Tracker – Configuration Scripts
 
 This folder contains two helper scripts to create the configuration file for the [Sonarr Calendar Tracker](https://github.com/yourusername/sonarr-calendar).  
-By default both scripts generate a `.sonarr_calendar_config.json` file in the same directory where they are run, however you can specify specfic locations, just remember the outputed JSON file needs to be in the folder where you execute the main sonnar_calendar script.
+By default both scripts generate a `.sonarr_calendar_config.json` file in the same directory where they are run, however you can specify specific locations for all output, just remember the JSON file needs to be in the folder where you execute the main sonnar_calendar script.
 ---
 
 ## 📋 Prerequisites
@@ -37,3 +37,4 @@ Remember you may need to use python3 on Linux OS's
   ```bash
 
   python sonarr_config_cli.py or python sonarr_calendar_config.py
+

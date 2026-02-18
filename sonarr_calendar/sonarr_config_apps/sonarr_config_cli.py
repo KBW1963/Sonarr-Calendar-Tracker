@@ -5,72 +5,72 @@ For Linux/Windows/macOS systems - Creates and saves configuration settings
 
 Version History:
 ===============
-v1.0.0 (2024-01-01) - Initial release
+v1.0.0 (2026-02-06) - Initial release
   - Basic configuration wizard
   - Sonarr connection settings
   - Date range configuration
   - File path configuration
   - Refresh interval in hours
 
-v1.1.0 (2024-01-10) - Platform detection and path improvements
+v1.1.0 (2026-02-07) - Platform detection and path improvements
   - Added multi-platform support (Windows, Linux, macOS)
   - Platform-specific path handling
   - Added window centering for GUI (not applicable to CLI)
   - Cross-platform directory operations
 
-v1.2.0 (2024-01-12) - Connection testing
+v1.2.0 (2026-02-08) - Connection testing
   - Added requests library integration
   - Sonarr connection testing
   - API key masking in display
   - Connection status feedback
 
-v1.3.0 (2024-01-14) - UI improvements
+v1.3.0 (2026-02-09) - UI improvements
   - Added emoji icons for better UX
   - Improved error messages
   - Configuration validation
   - Configuration summary display
   - Status messages with color coding
 
-v2.1.0 (2024-01-15) - Mouse cut/copy/paste functionality (CLI uses terminal defaults)
+v2.1.0 (2026-02-10) - Mouse cut/copy/paste functionality (CLI uses terminal defaults)
   - Terminal native copy/paste support (Ctrl+Shift+C/V)
   - Right-click paste in most terminals
   - Cross-platform clipboard compatibility
   - All input fields support terminal paste operations
 
-v2.2.0 (2024-01-16) - File checking and security improvements
+v2.2.0 (2026-02-11) - File checking and security improvements
   - Added config file existence check at startup
   - Option to use existing values as defaults during configuration
   - API key masking in prompts - displays only last 6 characters
   - Improved platform-specific execution instructions
   - Better handling of existing configuration values
 
-v2.3.0 (2024-01-17) - API key input masking and default refresh
+v2.3.0 (2026-02-12) - API key input masking and default refresh
   - API key input now masked with asterisks during typing
   - Visual feedback when pasting API keys
   - Refresh interval default set to 6 hours
   - Enhanced security for sensitive input
 
-v2.4.0 (2024-01-18) - Enhanced connection error handling and API key masking
+v2.4.0 (2026-02-13) - Enhanced connection error handling and API key masking
   - Connection failure now prompts user to restart configuration
   - API key input shows 40 asterisks when pasted (visual feedback)
   - All characters masked during typing for maximum security
   - Improved error messages with clear next steps
   - Option to retry or restart configuration on connection failure
 
-v2.5.0 (2024-01-19) - Fixed API key masking and graceful interrupt handling
+v2.5.0 (2026-02-14) - Fixed API key masking and graceful interrupt handling
   - Fixed API key input to show 40 asterisks when pasted
   - Auto-submit after paste with visual confirmation
   - Added graceful handling of Ctrl+C interrupts
   - Clean exit with user-friendly message
   - Proper signal handling for all platforms
 
-v2.6.0 (2024-01-20) - Real-time API key masking with visual feedback
+v2.6.0 (2026-02-15) - Real-time API key masking with visual feedback
   - Custom input function shows asterisks while typing/pasting
   - Visual confirmation shows 40 asterisks after input
   - Backspace and delete keys work normally
   - Cross-platform compatibility for all terminal types
 
-v3.0.0 (2024-01-21) - Pre-execution OS validation and dependency checking
+v3.0.0 (2026-02-16) - Pre-execution OS validation and dependency checking
   - Added comprehensive OS validation before script execution
   - Platform-specific dependency checking
   - Clear installation instructions for each OS
@@ -78,7 +78,24 @@ v3.0.0 (2024-01-21) - Pre-execution OS validation and dependency checking
   - Python version validation
   - Terminal capability checking
 
-Current Version: v3.0.0
+v3.1.0 (2026-02-18) - Added image cache enable/disable option
+  - Interactive prompt to enable/disable image caching
+  - New command-line flag `--enable-image-cache`
+  - Configuration now includes `enable_image_cache` boolean
+  - Updated summary display to show cache status
+  - Parity with main calendar generator configuration
+
+v3.1.1 (2026-02-18) - Fixed file permission issues
+  - Changed config directory to user's home folder to avoid permission problems
+  - Added automatic directory creation when saving configuration
+  - Improved cross-platform compatibility
+
+v3.1.2 (2026-02-18) - Fixed NameError in connection test
+  - Moved requests import check inside the class for reliable scoping
+  - Added fallback warning when requests module is missing
+  - Improved error handling during connection testing
+
+Current Version: v3.1.2
 """
 
 import json
@@ -145,7 +162,7 @@ class PreFlightChecker:
     def print_header(self):
         """Print validation header"""
         print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.ENDC}")
-        print(f"{Colors.BOLD}{Colors.BLUE}🔍 Sonarr Calendar Pro - Pre-Flight Check v3.0.0{Colors.ENDC}")
+        print(f"{Colors.BOLD}{Colors.BLUE}🔍 Sonarr Calendar Pro - Pre-Flight Check v3.1.2{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.ENDC}\n")
     
     def print_success(self, text: str):
@@ -336,20 +353,10 @@ if not validator.run_validation():
     sys.exit(1)
 
 # ============================================================================
-# MAIN SCRIPT (continues after validation)
-# ============================================================================
-
-# Try to import requests (optional) - Added in v1.2.0
-try:
-    import requests
-    REQUESTS_AVAILABLE = True
-except ImportError:
-    REQUESTS_AVAILABLE = False
-
-# ============================================================================
 # CONFIGURATION
 # ============================================================================
-CONFIG_DIR = Path(__file__).parent
+# Use user's home directory to avoid permission issues (v3.1.1)
+CONFIG_DIR = Path.home() / '.sonarr_calendar_config'
 CONFIG_FILE = CONFIG_DIR / '.sonarr_calendar_config.json'
 EXECUTION_DIR = Path.cwd()  # Get the directory where script was executed from
 
@@ -454,6 +461,16 @@ class SonarrCLIConfig:
         self.system = platform.system()
         self.config: Dict[str, Any] = {}
         self.use_existing_as_defaults = False
+        
+        # v3.1.2: Check for requests module availability as a class attribute
+        try:
+            import requests
+            self.requests_available = True
+            self.requests = requests
+        except ImportError:
+            self.requests_available = False
+            self.requests = None
+        
         self.check_existing_config()
     
     # v2.2.0: Check for existing config and ask to use as defaults
@@ -481,6 +498,9 @@ class SonarrCLIConfig:
                     print(f"  • Days Future: {self.config['days_future']}")
                 if 'output_html_file' in self.config:
                     print(f"  • HTML Output: {self.config['output_html_file']}")
+                if 'enable_image_cache' in self.config:
+                    status = "Enabled" if self.config['enable_image_cache'] else "Disabled"
+                    print(f"  • Image Cache: {status}")
                 
                 # Ask user if they want to use these as defaults
                 self.use_existing_as_defaults = self.get_yes_no(
@@ -622,10 +642,6 @@ class SonarrCLIConfig:
             print(f"\n{Colors.YELLOW}⚠️  Prompt cancelled{Colors.ENDC}")
             raise
     
-    def load_existing_config(self):
-        """Load existing configuration if available - v2.2.0: Now integrated into check_existing_config"""
-        pass  # Functionality moved to check_existing_config
-    
     def validate_url(self, url: str) -> bool:
         """Validate URL format"""
         if not url:
@@ -634,9 +650,10 @@ class SonarrCLIConfig:
     
     # v1.2.0: Connection testing
     # v2.4.0: Enhanced error handling with restart option
+    # v3.1.2: Use self.requests_available instead of global variable
     def test_connection(self, url: str, api_key: str) -> bool:
         """Test connection to Sonarr - Added in v1.2.0, enhanced v2.4.0"""
-        if not REQUESTS_AVAILABLE:
+        if not self.requests_available:
             self.print_warning("requests library not installed. Cannot test connection.")
             self.print_info("Install with: pip3 install requests")
             return False
@@ -645,7 +662,7 @@ class SonarrCLIConfig:
         
         try:
             headers = {"X-Api-Key": api_key}
-            response = requests.get(f"{url}/api/v3/system/status", headers=headers, timeout=10)
+            response = self.requests.get(f"{url}/api/v3/system/status", headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
@@ -656,13 +673,13 @@ class SonarrCLIConfig:
                 self.print_error(f"Connection failed (Status: {response.status_code})")
                 self.print_error("Please check your URL and API key")
                 return False
-        except requests.exceptions.ConnectionError:
+        except self.requests.exceptions.ConnectionError:
             self.print_error("❌ Cannot connect to Sonarr - Check URL and network")
             self.print_error("   • Verify Sonarr is running")
             self.print_error("   • Check if the URL is correct")
             self.print_error("   • Ensure no firewall is blocking the connection")
             return False
-        except requests.exceptions.Timeout:
+        except self.requests.exceptions.Timeout:
             self.print_error("❌ Connection timeout - Sonarr is not responding")
             self.print_error("   • Check if Sonarr is running")
             self.print_error("   • Verify network connectivity")
@@ -829,6 +846,7 @@ class SonarrCLIConfig:
                 raise
     
     # v1.0.0: File paths configuration (v1.1.0: updated for cross-platform, v2.2.0: uses existing config)
+    # v3.1.0: Added enable_image_cache prompt
     def configure_file_paths(self):
         """Configure file and directory paths - using execution directory"""
         self.print_header("FILE & DIRECTORY SETTINGS")
@@ -862,6 +880,11 @@ class SonarrCLIConfig:
             self.config['image_cache_dir'] = cache_dir
         except KeyboardInterrupt:
             raise
+        
+        # Enable image cache? (v3.1.0)
+        default_cache_enabled = self.config.get('enable_image_cache', True)
+        enable_cache = self.get_yes_no("Enable image caching? (recommended)", default=default_cache_enabled)
+        self.config['enable_image_cache'] = enable_cache
         
         # Create directories if they don't exist
         for path in [os.path.dirname(html_path), cache_dir]:
@@ -925,7 +948,7 @@ class SonarrCLIConfig:
         
         self.print_info(f"Calendar will auto-refresh every {interval_display}")
     
-    # v1.3.0: Configuration summary (v2.2.0: Updated with version info, v2.4.0: Updated version, v2.5.0: Updated version, v2.6.0: Updated version, v3.0.0: Updated version)
+    # v1.3.0: Configuration summary (v2.2.0: Updated with version info, v2.4.0: Updated version, v2.5.0: Updated version, v2.6.0: Updated version, v3.0.0: Updated version, v3.1.0: Added cache status)
     def show_config_summary(self):
         """Display configuration summary - v1.3.0: Enhanced with better formatting"""
         self.print_header("CONFIGURATION SUMMARY")
@@ -947,6 +970,8 @@ class SonarrCLIConfig:
         self.print_bullet(f"HTML: {self.config['output_html_file']}")
         self.print_bullet(f"JSON: {self.config['output_json_file'] or 'Not enabled'}")
         self.print_bullet(f"Cache: {self.config['image_cache_dir']}")
+        cache_status = "Enabled" if self.config.get('enable_image_cache', True) else "Disabled"
+        self.print_bullet(f"Image Cache: {cache_status}")
         
         # Refresh Settings
         refresh_hours = self.config['refresh_interval_hours']
@@ -970,28 +995,28 @@ class SonarrCLIConfig:
         
         # Version info
         print(f"\n{Colors.BOLD}Version:{Colors.ENDC}")
-        self.print_bullet(f"v3.0.0 (2024-01-21) - Pre-execution OS validation")
+        self.print_bullet(f"v3.1.2 (2026-02-18) - Fixed NameError in connection test")
     
     # v1.0.0: Save configuration
     def save_configuration(self):
         """Save configuration to file"""
         try:
-            # Save to hidden file
+            # Ensure the directory exists (v3.1.1)
+            CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            
             with open(CONFIG_FILE, 'w') as f:
                 json.dump(self.config, f, indent=4)
             
             self.print_success(f"Configuration saved to {CONFIG_FILE}")
-            
+            return True
         except Exception as e:
             self.print_error(f"Failed to save configuration: {e}")
             return False
-        
-        return True
     
-    # v1.0.0: Main configuration wizard (v1.3.0: updated with better flow, v2.2.0: updated version, v2.3.0: updated, v2.4.0: updated, v2.5.0: updated, v2.6.0: updated, v3.0.0: updated)
+    # v1.0.0: Main configuration wizard (v1.3.0: updated with better flow, v2.2.0: updated version, v2.3.0: updated, v2.4.0: updated, v2.5.0: updated, v2.6.0: updated, v3.0.0: updated, v3.1.0: updated)
     def run_configuration_wizard(self):
         """Run the complete configuration wizard"""
-        self.print_header(f"SONARR CALENDAR PRO - CLI CONFIGURATION v3.0.0")
+        self.print_header(f"SONARR CALENDAR PRO - CLI CONFIGURATION v3.1.2")
         
         print("Welcome to the Sonarr Calendar configuration tool!")
         print(f"Platform: {self.system}")
@@ -1029,10 +1054,10 @@ class SonarrCLIConfig:
             print(f"{Colors.BLUE}ℹ️  Exiting gracefully. No changes were saved.{Colors.ENDC}\n")
             sys.exit(0)
     
-    # v1.1.0: Quick configuration mode (v2.2.0: updated, v2.5.0: updated, v2.6.0: updated, v3.0.0: updated)
+    # v1.1.0: Quick configuration mode (v2.2.0: updated, v2.5.0: updated, v2.6.0: updated, v3.0.0: updated, v3.1.0: added enable-image-cache flag)
     def quick_configure(self, args):
         """Quick configuration using command line arguments"""
-        self.print_header(f"QUICK CONFIGURATION v3.0.0")
+        self.print_header(f"QUICK CONFIGURATION v3.1.2")
         
         # Map command line args to config
         if args.url:
@@ -1051,6 +1076,11 @@ class SonarrCLIConfig:
             self.config['image_cache_dir'] = args.cache_dir
         if args.refresh_interval:
             self.config['refresh_interval_hours'] = args.refresh_interval
+        if args.enable_image_cache is not None:
+            self.config['enable_image_cache'] = args.enable_image_cache
+        else:
+            # Default to True if not specified
+            self.config['enable_image_cache'] = self.config.get('enable_image_cache', True)
         
         # Show summary
         self.show_config_summary()
@@ -1083,7 +1113,7 @@ class SonarrCLIConfig:
 def main():
     """Main function"""
     parser = argparse.ArgumentParser(
-        description="Sonarr Calendar Pro - CLI Configuration Tool v3.0.0",
+        description="Sonarr Calendar Pro - CLI Configuration Tool v3.1.2",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -1102,18 +1132,22 @@ Copy/Paste Support:
   • macOS Terminal: Cmd+C/V or right-click
   • All platforms support standard terminal paste operations
   
-Security Features (v3.0.0):
+Security Features (v3.1.2):
   • Pre-execution OS validation and dependency checking
   • Real-time API key masking with asterisks
   • Visual confirmation with 40 asterisks after input
   • Graceful handling of Ctrl+C interrupts
   • Clear installation instructions for each OS
+  • Image cache enable/disable option
+  • Configuration stored in user's home directory for cross-platform reliability
+  • Fixed NameError in connection test (requests module detection)
   
 Default Settings:
   • Refresh Interval: 6 hours (optimized for typical usage)
   • Days Past: 7 days
   • Days Future: 30 days
   • Sonarr URL: http://localhost:8989
+  • Image Cache: Enabled
         """
     )
     
@@ -1131,6 +1165,9 @@ Default Settings:
     parser.add_argument('--json-file', help='JSON output file path')
     parser.add_argument('--cache-dir', help='Image cache directory')
     parser.add_argument('--refresh-interval', type=int, help='Refresh interval in hours')
+    parser.add_argument('--enable-image-cache', type=lambda x: x.lower() == 'true', 
+                        choices=[True, False], nargs='?', const=True,
+                        help='Enable image caching (true/false)')
     
     args = parser.parse_args()
     

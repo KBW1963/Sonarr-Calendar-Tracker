@@ -13,7 +13,7 @@ Track upcoming episodes, monitor overall progress, and see which seasons have be
 ## ✨ Features
 
 - 📅 **Customisable date range** – Choose how many days past and future to display (configurable).
-- 🖼️ **Poster image caching** – Images are downloaded and stored locally for faster loading.
+- 🖼️ **Image caching** – Show posters or fanart are downloaded and stored locally for faster loading. **Fanart is now the default priority**, with fallback to poster and banner.
 - 🎨 **Dark/light theme toggle** – Switch between themes with a click (your choice is saved in your browser).
 - 📊 **Overall & per‑show progress** – See at a glance how much of your library is downloaded, and drill down into each series.
 - 🏆 **Recently completed seasons** – Shows that finished their current season within the date range are highlighted.
@@ -21,7 +21,7 @@ Track upcoming episodes, monitor overall progress, and see which seasons have be
 - ⌨️ **Graceful interrupt handling** – Press `Ctrl+C` once to exit cleanly, twice to force quit.
 - 🌍 **OS‑aware date formatting** – Dates automatically adapt to your system’s locale (e.g. `DD/MM/YYYY` or `MM/DD/YYYY`).
 - 🔗 **Direct links to Sonarr** – Click any show card to open its page in Sonarr.
-
+- 🔒 **Secure API key handling** – All API key inputs are masked in real‑time with asterisks.
 ---
 
 ## 📦 Requirements

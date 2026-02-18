@@ -18,6 +18,7 @@ Allows the package to be executed with `python -m sonarr_calendar`. Simply impor
 - Creates a single `GracefulInterruptHandler` for the whole application.
 - Orchestrates the main workflow: fetching data, caching images, processing shows, generating HTML, and optionally writing JSON.
 - Handles auto‑refresh loop with interrupt checking.
+- **Updated in v2.6.0:** Help text now mentions home directory as a config search location; fixed indentation error.
 
 ### `config.py` – Configuration management
 - Defines the `Config` dataclass with all settings and default values.
@@ -49,6 +50,7 @@ Allows the package to be executed with `python -m sonarr_calendar`. Simply impor
 - Loads the Jinja2 environment from the `templates/` folder.
 - Registers custom filters and global functions (`format_date`, `slugify`, `get_episode_badge`, etc.).
 - `generate()` computes overall statistics and completed seasons, then renders `calendar.html.j2` with all context variables.
+- - **No changes** in recent updates, but relies on the new fanart URLs provided by `image_cache.py`
 
 ### `utils.py` – Shared utilities
 - `GracefulInterruptHandler`: catches `SIGINT`, prints a message, and raises `KeyboardInterrupt` on the first press.
@@ -60,7 +62,22 @@ Allows the package to be executed with `python -m sonarr_calendar`. Simply impor
 - `setup_logging()` – configures the `logging` module based on verbosity.
 
 ### 📁 `templates/`
-- `calendar.html.j2` – The Jinja2 template containing the entire HTML/CSS/JavaScript. It uses placeholders for dynamic data and relies on the filters/functions registered in `html_generator.py`.
+- `calendar.html.j2` – The Jinja2 template containing the entire HTML/CSS/JavaScript. It uses placeholders for dynamic data and relies on the filters/functions registered in `html_generator.py`. Nnow receives fanart URLs via `show.poster_url`.
+
+---
+
+## 📁 Configuration Tool – `sonarr_config_cli.py`
+
+A standalone interactive wizard for creating and managing the configuration file. Key features:
+
+- **Real‑time API key masking** – asterisks appear as you type/paste.
+- **Connection testing** – verifies Sonarr reachability.
+- **File permission fix** (v3.1.1) – now saves configuration in the user’s home directory (`~/.sonarr_calendar_config/.sonarr_calendar_config.json`) to avoid permission errors.
+- **Image cache toggle** (v3.1.0) – prompts to enable/disable image caching, stored as `enable_image_cache` in the config.
+- **Pre‑flight validation** (v3.0.0) – checks Python version, OS compatibility, and required modules before running.
+- **Quick mode** – accepts command‑line arguments for non‑interactive setup.
+- **Graceful interrupt handling** – clean exit on `Ctrl+C`.
+**Version history:** v3.1.2 (latest) fixed a `NameError` in connection testing by moving the `requests` import check inside the class.
 
 ---
 
@@ -69,6 +86,7 @@ Allows the package to be executed with `python -m sonarr_calendar`. Simply impor
 - `setup.py`: Makes the package installable, defines dependencies, and creates the `sonarr-calendar` console script.
 - `requirements.txt`: Lists runtime dependencies for quick installation.
 - `README.md`: User‑facing documentation.
+-  `SYNOPSIS.md`: This file – developer overview.
 - `CONTRIBUTING.md`: Guidelines for contributors.
 - `CHANGELOG.md`: Version history.
 - `LICENSE`: MIT license file.

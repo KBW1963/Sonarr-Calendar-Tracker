@@ -16,6 +16,7 @@ No additional Python packages are required – the scripts use only the standard
 ---
 
 ## 🔧 Which script should I use?
+Previously we've mentioned the `sonarr_config_cli.py` script and use this as the preferred tool. However, for windows users there is also a form (GUI) version which has parity to the CLI version. As to which you should use, that depends on your platform.
 
 | Script | Description |
 |--------|-------------|
@@ -61,4 +62,5 @@ Remember you may need to use python3 on Linux OS's
   ```bash
 
   python sonarr_config_cli.py or python sonarr_calendar_config.py
+
 

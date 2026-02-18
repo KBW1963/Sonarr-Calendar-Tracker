@@ -64,7 +64,7 @@ def run_once(config: Config, handler: GracefulInterruptHandler, verbose: bool = 
                     'total_days': date_range.total_days,
                 },
                 'total_shows': len(processed_shows),
-                'version': "3.0.2"
+                'version': "2.6.0"
             }
             json_path.write_text(json.dumps(json_data, indent=2), encoding='utf-8')
             logger.info("✅ JSON data saved to %s", json_path)
@@ -100,7 +100,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Sonarr Calendar Tracker")
     parser.add_argument('--once', action='store_true', help='Run once and exit')
     parser.add_argument('--config', type=Path, default=None,
-                        help='Path to config file (default: .sonarr_calendar_config.json in current dir)')
+                        help='Path to config file (default: searched in current dir, script dir, project root, and ~/.sonarr_calendar_config/)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     args = parser.parse_args()
 

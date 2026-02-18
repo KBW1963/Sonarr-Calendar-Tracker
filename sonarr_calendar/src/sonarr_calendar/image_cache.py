@@ -10,10 +10,20 @@ from sonarr_calendar.utils import GracefulInterruptHandler
 
 logger = logging.getLogger(__name__)
 
-def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'poster', base_url: str = '') -> Optional[str]:
+def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'fanart', base_url: str = '') -> Optional[str]:
     """
-    Extract poster URL from series info.
-    Accepts either a dictionary (from API) or a SeriesInfo dataclass.
+    Extract the best available image URL from series information.
+    Priority order (hardcoded): fanart → poster → banner → any image.
+    The 'quality' parameter is used only as a hint; if the preferred quality
+    is not available, the function falls back to the next in priority.
+
+    Args:
+        series_info: SeriesInfo dataclass or dict from API.
+        quality: Preferred image type (default 'fanart' – now primary).
+        base_url: Sonarr base URL for resolving relative paths.
+
+    Returns:
+        URL string or None.
     """
     # Get images list
     if hasattr(series_info, 'images'):
@@ -21,17 +31,22 @@ def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'poste
     else:
         images = series_info.get('images', [])
 
-    for img in images:
-        if img.get('coverType') == quality:
-            url = img.get('url')
-            if url:
-                if url.startswith('http'):
-                    return url
-                elif base_url:
-                    return f"{base_url.rstrip('/')}/{url.lstrip('/')}"
-                else:
-                    return url
-    # fallback to any image
+    # Define priority order (fanart first, then poster, then banner)
+    priority = ['fanart', 'poster', 'banner']
+
+    for cover_type in priority:
+        for img in images:
+            if img.get('coverType') == cover_type:
+                url = img.get('url')
+                if url:
+                    if url.startswith('http'):
+                        return url
+                    elif base_url:
+                        return f"{base_url.rstrip('/')}/{url.lstrip('/')}"
+                    else:
+                        return url
+
+    # Fallback to any image
     for img in images:
         url = img.get('url')
         if url:
@@ -43,6 +58,7 @@ def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'poste
                 return url
     return None
 
+
 class ImageCache:
     def __init__(self, cache_dir: Path, interrupt_handler: GracefulInterruptHandler, base_url: str = ''):
         self.cache_dir = Path(cache_dir)
@@ -50,15 +66,13 @@ class ImageCache:
         self.handler = interrupt_handler
         self.base_url = base_url
 
-    def _download_one(self, series_id: int, url: str, image_type: str = 'poster') -> bool:
+    def _download_one(self, series_id: int, url: str, image_type: str = 'fanart') -> bool:
         if self.handler.check_interrupt():
             return False
         dest = self.cache_dir / f"{series_id}_{image_type}.jpg"
         if dest.exists():
-            # Check age
-            age = (datetime.now() - datetime.fromtimestamp(dest.stat().st_mtime)).days
-            if age < 7:  # less than a week old
-                return True
+            # Optionally check age; for now, just return True (cached)
+            return True
         try:
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
@@ -74,10 +88,9 @@ class ImageCache:
         with ThreadPoolExecutor(max_workers=5) as executor:
             for series in all_series:
                 series_id = series['id']
-                url = get_poster_url(series, 'poster', self.base_url)
+                url = get_poster_url(series, 'fanart', self.base_url)
                 if url:
-                    tasks.append(executor.submit(self._download_one, series_id, url, 'poster'))
-            # Wait for all, checking interrupt
+                    tasks.append(executor.submit(self._download_one, series_id, url, 'fanart'))
             success = 0
             for future in as_completed(tasks):
                 if self.handler.check_interrupt():

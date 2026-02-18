@@ -20,9 +20,9 @@ class Config:
     refresh_interval_hours: int = 6
     html_theme: str = "dark"
     grid_columns: int = 4
-    image_quality: str = "poster"
+    image_quality: str = "fanart"
     enable_image_cache: bool = True
-    html_title: str = "Sonarr Calendar Pro"  # <-- default added
+    html_title: str = "Sonarr Calendar Pro"
 
     def __post_init__(self):
         if not self.sonarr_url.startswith(('http://', 'https://')):
@@ -40,12 +40,14 @@ def load_config(config_path: Optional[Path] = None) -> Config:
       2. Current working directory.
       3. Directory of this script (src/sonarr_calendar).
       4. Parent of the script directory (project root).
+      5. User's home directory ( ~/.sonarr_calendar_config/ ) – where the config script now saves.
     """
     if config_path is None:
         candidates = [
             Path.cwd() / '.sonarr_calendar_config.json',
             Path(__file__).parent / '.sonarr_calendar_config.json',
             Path(__file__).parent.parent / '.sonarr_calendar_config.json',
+            Path.home() / '.sonarr_calendar_config' / '.sonarr_calendar_config.json',  # <-- new
         ]
         for candidate in candidates:
             if candidate.exists():

@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-
+from sonarr_calendar import __version__   # <-- add this import
 from sonarr_calendar.config import load_config, Config
 from sonarr_calendar.api_client import SonarrClient
 from sonarr_calendar.image_cache import ImageCache

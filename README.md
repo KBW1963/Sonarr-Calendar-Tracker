@@ -19,7 +19,7 @@ So, please be understanding! ☺️.
 ## ✨ Features
 
 - 📅 **Customisable date range** – Choose how many days past and future to display (configurable).
-- 🖼️ **Image caching** – Show posters or fanart are downloaded and stored locally for faster loading. **Fanart is now the default priority**, with fallback to poster and banner.
+- 🖼️ **Image caching** – Show posters or fanart are downloaded and stored locally for faster loading. **Fanart is now the default priority**, with fallback to poster and banner. However, poster is forced for the recently completed section.
 - 🎨 **Dark/light theme toggle** – Switch between themes with a click (your choice is saved in your browser).
 - 📊 **Overall & per‑show progress** – See at a glance how much of your library is downloaded, and drill down into each series.
 - 🏆 **Recently completed seasons** – Shows that finished their current season within the date range are highlighted.

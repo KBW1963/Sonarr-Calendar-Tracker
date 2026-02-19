@@ -14,24 +14,13 @@ def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'fanar
     """
     Extract the best available image URL from series information.
     Priority order (hardcoded): fanart → poster → banner → any image.
-    The 'quality' parameter is used only as a hint; if the preferred quality
-    is not available, the function falls back to the next in priority.
-
-    Args:
-        series_info: SeriesInfo dataclass or dict from API.
-        quality: Preferred image type (default 'fanart' – now primary).
-        base_url: Sonarr base URL for resolving relative paths.
-
-    Returns:
-        URL string or None.
+    The 'quality' parameter is kept for compatibility but not strictly used.
     """
-    # Get images list
     if hasattr(series_info, 'images'):
         images = series_info.images
     else:
         images = series_info.get('images', [])
 
-    # Define priority order (fanart first, then poster, then banner)
     priority = ['fanart', 'poster', 'banner']
 
     for cover_type in priority:
@@ -46,7 +35,6 @@ def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'fanar
                     else:
                         return url
 
-    # Fallback to any image
     for img in images:
         url = img.get('url')
         if url:
@@ -58,6 +46,27 @@ def get_poster_url(series_info: Union[Dict, 'SeriesInfo'], quality: str = 'fanar
                 return url
     return None
 
+def get_image_by_type(series_info: Union[Dict, 'SeriesInfo'], cover_type: str, base_url: str = '') -> Optional[str]:
+    """
+    Attempt to fetch a specific image type (e.g., 'poster') from the series.
+    Returns None if that type is not available.
+    """
+    if hasattr(series_info, 'images'):
+        images = series_info.images
+    else:
+        images = series_info.get('images', [])
+
+    for img in images:
+        if img.get('coverType') == cover_type:
+            url = img.get('url')
+            if url:
+                if url.startswith('http'):
+                    return url
+                elif base_url:
+                    return f"{base_url.rstrip('/')}/{url.lstrip('/')}"
+                else:
+                    return url
+    return None
 
 class ImageCache:
     def __init__(self, cache_dir: Path, interrupt_handler: GracefulInterruptHandler, base_url: str = ''):
@@ -71,7 +80,6 @@ class ImageCache:
             return False
         dest = self.cache_dir / f"{series_id}_{image_type}.jpg"
         if dest.exists():
-            # Optionally check age; for now, just return True (cached)
             return True
         try:
             resp = requests.get(url, timeout=15)
@@ -83,7 +91,7 @@ class ImageCache:
             return False
 
     def download_all_posters(self, all_series: List[Dict]) -> int:
-        """Download posters for all series in parallel. Returns number successfully downloaded/verified."""
+        """Download images for all series in parallel. Uses fanart priority."""
         tasks = []
         with ThreadPoolExecutor(max_workers=5) as executor:
             for series in all_series:

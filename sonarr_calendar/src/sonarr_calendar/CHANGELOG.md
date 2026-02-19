@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Sonarr Calendar Tracker (Main Application)
 
+
+### [2.7.0] - 2026-02-19
 #### Added
 - `get_image_by_type()` in `image_cache.py` to fetch a specific image type (e.g., poster) without altering the main fanart priority.
 - `poster_image` field in `ProcessedShow` dataclass, storing the dedicated poster URL for each show.

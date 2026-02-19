@@ -7,7 +7,7 @@ It is intended for those who want to understand the internal structure. The docu
 ## 📁 `src/sonarr_calendar/` – Main package
 
 ### `__init__.py`
-Marks the directory as a Python package and may contain the version string.
+Marks the directory as a Python package and may contain the version string. Also, has the project versioning details.
 
 ### `__main__.py`
 Allows the package to be executed with `python -m sonarr_calendar`. Simply imports and calls `cli.main()`.

@@ -5,9 +5,15 @@
 ![Sonarr](https://img.shields.io/badge/Sonarr-v3%2Fv4-orange)
 
 A beautiful, feature‑rich HTML dashboard for your Sonarr shows.  
-Track upcoming episodes, monitor overall progress, and see which seasons have been completed – all in a sleek, customisable interface.
+Track upcoming episodes over a specified date range, monitor overall progress, and see which seasons have been completed – all in a sleek, customisable interface.
 
 ### [Screenshot] - [https://github.com/KBW1963/sonarr_calendar/sonarr_calendar_screenshot.png](https://github.com/KBW1963/sonarr_calendar/blob/main/sonarr_calendar/sonarr_calendar_screenshot.png)
+---
+**NOTE: I am not a SW developer or a coder by trade. I am just using some skills from my past and my hobbyist approach to build this project. 
+And YES! a lot of research was needed to help me understand and develop the code, along with some AI suggestions, which to be fair is hard to not do with search engines today.
+
+So, please be understanding! ☺️.
+
 ---
 
 ## ✨ Features

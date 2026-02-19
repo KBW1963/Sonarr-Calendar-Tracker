@@ -60,6 +60,7 @@ python sonarr_config_cli.py
 Follow the prompts. The configuration file will be saved in your home directory under .sonarr_calendar_config/ to avoid permission issues.
 
 Option B – Create the file manually
+
 Create a file named .sonarr_calendar_config.json in one of the following locations (searched in order):
 
 - Current working directory
@@ -81,10 +82,10 @@ See Configuration for all available options.
 
 ### 4.  Run the calendar generator
 ```bash
-# One‑time run
+# One‑time run. Runs once and exits.
 python -m sonarr_calendar --once
 
-# Auto‑refresh mode
+# Auto‑refresh mode. Refreshers based on config setting.
 python -m sonarr_calendar
 ```
 ---
@@ -94,16 +95,16 @@ All settings are optional except `sonarr_url` and `sonarr_api_key`. Defaults are
 | Field |	Description |	Default
 |-------|-------------|---------|
 |`sonarr_url`| Your Sonarr instance URL (including port) | required
-|`sonarr_api_key`|	API key from Sonarr (Settings → General)| required
-|`days_past`|	Number of past days to include | 7
-|`days_future`|	Number of future days to include	|7
-|`output_html_file`	| Path where the HTML file will be saved	|sonarr_calendar.html (in current dir)
-|`output_json_file`| Optional JSON output (metadata only)	|null (no JSON)
+|`sonarr_api_key`| API key from Sonarr (Settings → General)| required
+|`days_past`|Number of past days to include | 7
+|`days_future`|	Number of future days to include| 7 
+|`output_html_file`	| Path where the HTML file will be save	| sonarr_calendar.html (in current dir)
+|`output_json_file`| Optional JSON output (metadata only)| null (no JSON)
 |`image_cache_dir`| Directory for cached images	|sonarr_images (in current dir)
 |`refresh_interval_hours`| Hours between auto‑refreshes	|6
 |`html_theme`|dark or light	|dark
-|`image_quality`	|Preferred image type (hint; actual priority is hardcoded: fanart → poster → banner)	|fanart
-|`enable_image_cache`	|Whether to cache images locally	|true (recommended)
+|`image_quality`|Preferred image type (hint; actual priority is hardcoded: fanart → poster → banner) | fanart
+|`enable_image_cache`| Whether to cache images locally	|true (recommended)
 
 
 ### 📁 Configuration File Location

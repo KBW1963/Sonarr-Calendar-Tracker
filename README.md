@@ -42,7 +42,7 @@ So, please be understanding! ☺️.
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/KBW1963/sonarr-calendar.git
+git clone https://github.com/KBW1963/sonarr_calendar.git
 cd sonarr-calendar
 ```
 ### 2.  Install dependencies

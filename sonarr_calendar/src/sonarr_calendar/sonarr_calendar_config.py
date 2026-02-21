@@ -6,31 +6,12 @@ Now with refresh interval in hours and platform detection
 
 Version History:
 ===============
-v1.0.0 (2024-01-01) - Initial release
-  - Basic configuration GUI
-  - Sonarr connection settings
-  - Date range configuration
-  - File path configuration
-  - Refresh interval in hours
-
-v1.1.0 (2024-01-10) - Platform detection and path improvements
-  - Added platform detection (Windows/Linux/macOS)
-  - Platform-specific default paths
-  - Cross-platform directory handling
-  - Added window centering
-
-v1.2.0 (2024-01-12) - Connection testing
-  - Added requests library integration
-  - Sonarr connection testing
-  - API key visibility toggle
-  - Connection status display
-
-v1.3.0 (2024-01-14) - UI improvements
-  - Added emoji icons for better UX
-  - Improved error messages
-  - Configuration validation
-  - Configuration summary dialog
-  - Status bar with feedback
+v2.2.0 (2024-01-22) - Added enable_image_cache option & double‑paste fix
+  - Added checkbox to enable/disable image caching
+  - Fixed double‑paste in input fields (now pastes once)
+  - Increased window height to prevent bottom truncation
+  - Updated configuration saving/loading to include enable_image_cache
+  - Default is enabled (checked)
 
 v2.1.0 (2024-01-15) - Mouse cut/copy/paste functionality
   - Added right-click context menu for all input fields
@@ -41,7 +22,9 @@ v2.1.0 (2024-01-15) - Mouse cut/copy/paste functionality
   - API key field now supports paste operations
   - All input fields fully clipboard-enabled
 
-Current Version: v2.1.0
+... (previous versions)
+
+Current Version: v2.2.0
 """
 
 # Check for tkinter first
@@ -101,8 +84,9 @@ CONFIG_FILE = CONFIG_DIR / '.sonarr_calendar_config.json'
 EXECUTION_DIR = Path.cwd()  # Get the directory where script was executed from
 
 # v2.1.0: Right-click context menu class for all input widgets
+# v2.2.0: Fixed double-paste by handling paste directly and returning "break" in bindings
 class RightClickMenu:
-    """Right-click context menu for Entry widgets - Added in v2.1.0"""
+    """Right-click context menu for Entry widgets - Added in v2.1.0, fixed v2.2.0"""
     def __init__(self, widget):
         self.widget = widget
         self.menu = tk.Menu(widget, tearoff=0)
@@ -116,17 +100,17 @@ class RightClickMenu:
         widget.bind("<Button-3>", self.show_menu)  # Linux/Windows right-click
         widget.bind("<Button-2>", self.show_menu)  # macOS right-click (Button-2)
         
-        # Bind keyboard shortcuts for consistency
-        widget.bind("<Control-x>", lambda e: self.cut())
-        widget.bind("<Control-c>", lambda e: self.copy())
-        widget.bind("<Control-v>", lambda e: self.paste())
-        widget.bind("<Control-a>", lambda e: self.select_all())
+        # Bind keyboard shortcuts and return "break" to prevent default handling (v2.2.0)
+        widget.bind("<Control-x>", lambda e: [self.cut(), "break"][0])
+        widget.bind("<Control-c>", lambda e: [self.copy(), "break"][0])
+        widget.bind("<Control-v>", lambda e: [self.paste(), "break"][0])
+        widget.bind("<Control-a>", lambda e: [self.select_all(), "break"][0])
         
         # For macOS Command key
-        widget.bind("<Command-x>", lambda e: self.cut())
-        widget.bind("<Command-c>", lambda e: self.copy())
-        widget.bind("<Command-v>", lambda e: self.paste())
-        widget.bind("<Command-a>", lambda e: self.select_all())
+        widget.bind("<Command-x>", lambda e: [self.cut(), "break"][0])
+        widget.bind("<Command-c>", lambda e: [self.copy(), "break"][0])
+        widget.bind("<Command-v>", lambda e: [self.paste(), "break"][0])
+        widget.bind("<Command-a>", lambda e: [self.select_all(), "break"][0])
     
     def show_menu(self, event):
         """Show the right-click menu"""
@@ -137,23 +121,29 @@ class RightClickMenu:
             self.menu.grab_release()
     
     def cut(self):
-        """Cut selected text"""
+        """Cut selected text using virtual event"""
         try:
             self.widget.event_generate("<<Cut>>")
         except:
             pass
     
     def copy(self):
-        """Copy selected text"""
+        """Copy selected text using virtual event"""
         try:
             self.widget.event_generate("<<Copy>>")
         except:
             pass
     
     def paste(self):
-        """Paste text from clipboard"""
+        """Paste text from clipboard directly to avoid double-paste (v2.2.0)"""
         try:
-            self.widget.event_generate("<<Paste>>")
+            # Get clipboard content
+            clipboard_text = self.widget.clipboard_get()
+            # Delete any selected text
+            if self.widget.tag_ranges("sel"):
+                self.widget.delete("sel.first", "sel.last")
+            # Insert at cursor
+            self.widget.insert("insert", clipboard_text)
         except:
             pass
     
@@ -190,7 +180,8 @@ class SonarrConfigApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Sonarr Calendar Pro - Configuration Setup")
-        self.root.geometry("800x880")
+        # v2.2.0: Increased height to 1000 to prevent bottom truncation
+        self.root.geometry("800x1000")
         self.root.resizable(False, False)
         
         # v1.1.0: Platform detection
@@ -296,29 +287,35 @@ class SonarrConfigApp:
         self.image_cache.grid(row=16, column=1, columnspan=2, sticky=(tk.W, tk.E), pady=5, padx=(10, 0))
         ttk.Button(main_frame, text="Browse", command=lambda: self.browse_directory(self.image_cache)).grid(row=16, column=3, padx=(5, 0))
         
+        # v2.2.0: Enable Image Cache checkbox
+        self.enable_cache_var = tk.BooleanVar(value=True)  # default to enabled
+        self.enable_cache_check = ttk.Checkbutton(main_frame, text="Enable image caching (recommended)", 
+                                                  variable=self.enable_cache_var)
+        self.enable_cache_check.grid(row=17, column=1, columnspan=2, sticky=tk.W, padx=(10, 0), pady=5)
+        
         # Separator
-        ttk.Separator(main_frame, orient='horizontal').grid(row=17, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=20)
+        ttk.Separator(main_frame, orient='horizontal').grid(row=18, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=20)
         
         # ==================== Refresh Configuration Section ====================
-        self.create_section_header(main_frame, "Refresh Settings", 18)
+        self.create_section_header(main_frame, "Refresh Settings", 19)
         
         # Refresh Interval in hours
-        ttk.Label(main_frame, text="Auto-Refresh Interval:", font=('Arial', 10)).grid(row=19, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Auto-Refresh Interval:", font=('Arial', 10)).grid(row=20, column=0, sticky=tk.W, pady=5)
         self.refresh_interval = ComboboxWithMenu(main_frame, values=[1, 2, 3, 4, 6, 8, 12, 24, 48, 72, 168], width=8, font=('Arial', 10))
-        self.refresh_interval.grid(row=19, column=1, sticky=tk.W, pady=5, padx=(10, 0))
+        self.refresh_interval.grid(row=20, column=1, sticky=tk.W, pady=5, padx=(10, 0))
         self.refresh_interval.set(6)
-        ttk.Label(main_frame, text="hours (1-168 hours / 7 days)", font=('Arial', 8), foreground='gray').grid(row=19, column=2, sticky=tk.W)
+        ttk.Label(main_frame, text="hours (1-168 hours / 7 days)", font=('Arial', 8), foreground='gray').grid(row=20, column=2, sticky=tk.W)
         
         # Info text with emoji
         ttk.Label(main_frame, text="⏰ The script will automatically refresh the calendar at this interval", 
-                 font=('Arial', 10), foreground='#666666').grid(row=20, column=1, columnspan=2, sticky=tk.W, padx=(10, 0), pady=(0, 10))
+                 font=('Arial', 10), foreground='#666666').grid(row=21, column=1, columnspan=2, sticky=tk.W, padx=(10, 0), pady=(0, 10))
         
         # Separator
-        ttk.Separator(main_frame, orient='horizontal').grid(row=21, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=20)
+        ttk.Separator(main_frame, orient='horizontal').grid(row=22, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=20)
         
         # ==================== Action Buttons ====================
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=22, column=0, columnspan=4, pady=10)
+        button_frame.grid(row=23, column=0, columnspan=4, pady=10)
         
         self.save_btn = ttk.Button(button_frame, text="💾 Save Configuration", command=self.save_configuration, width=25)
         self.save_btn.pack(side=tk.LEFT, padx=5)
@@ -328,16 +325,16 @@ class SonarrConfigApp:
         
         self.default_btn = ttk.Button(button_frame, text="🔄 Reset to Defaults", command=self.reset_defaults, width=25)
         self.default_btn.pack(side=tk.LEFT, padx=5)
-              
+        
         self.exit_btn = ttk.Button(button_frame, text="🚪 Exit", command=self.root.quit, width=20)
         self.exit_btn.pack()
         
         # ==================== Footer with Version Info ====================
         footer_frame = ttk.Frame(main_frame)
-        footer_frame.grid(row=23, column=0, columnspan=4, pady=(5, 0))
+        footer_frame.grid(row=24, column=0, columnspan=4, pady=(5, 0))
         
         version_label = ttk.Label(footer_frame, 
-                                 text="Version 2.1.0 | Released: 2024-01-15 | Right-click for cut/copy/paste",
+                                 text="Version 2.2.0",
                                  font=('Arial', 8), foreground='gray')
         version_label.pack()
         
@@ -531,9 +528,9 @@ class SonarrConfigApp:
                 except:
                     errors.append(f"Cannot create directory for HTML file: {html_dir}")
         
-        # Validate cache directory
+        # Validate cache directory (only if caching is enabled)
         cache_dir = self.image_cache.get().strip()
-        if cache_dir:
+        if self.enable_cache_var.get() and cache_dir:
             cache_path = Path(cache_dir)
             if not cache_path.exists():
                 try:
@@ -551,9 +548,9 @@ class SonarrConfigApp:
         
         return errors
     
-    # v1.0.0: Save configuration (v1.3.0: added validation and summary)
+    # v1.0.0: Save configuration (v1.3.0: added validation and summary, v2.2.0: added enable_image_cache)
     def save_configuration(self):
-        """Save configuration to hidden file - Added in v1.0.0, updated v1.3.0"""
+        """Save configuration to hidden file - Added in v1.0.0, updated v1.3.0, v2.2.0"""
         # Validate configuration
         errors = self.validate_config()
         if errors:
@@ -570,7 +567,8 @@ class SonarrConfigApp:
             'output_html_file': self.output_html.get().strip(),
             'output_json_file': self.output_json.get().strip() or None,
             'image_cache_dir': self.image_cache.get().strip() or str(EXECUTION_DIR / "sonarr_images"),
-            'refresh_interval_hours': int(self.refresh_interval.get())
+            'refresh_interval_hours': int(self.refresh_interval.get()),
+            'enable_image_cache': self.enable_cache_var.get()  # v2.2.0: added
         }
         
         try:
@@ -587,14 +585,16 @@ class SonarrConfigApp:
             messagebox.showerror("Save Error", f"Failed to save configuration:\n{str(e)}")
             self.status_var.set("❌ Failed to save configuration")
     
-    # v1.3.0: Configuration summary
+    # v1.3.0: Configuration summary (updated v2.2.0 to include enable_image_cache)
     def show_config_summary(self, config):
-        """Display a summary of saved configuration - Added in v1.3.0"""
+        """Display a summary of saved configuration - Added in v1.3.0, updated v2.2.0"""
         # Mask the API key for display
         api_key = config['sonarr_api_key']
         masked_key = '•' * 32 + (api_key[-4:] if len(api_key) > 4 else '')
         
-        summary = f"""✅ Configuration Saved Successfully! (v2.1.0)
+        cache_enabled = "Enabled" if config['enable_image_cache'] else "Disabled"
+        
+        summary = f"""✅ Configuration Saved Successfully! (v2.2.0)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SONARR SETTINGS:
@@ -614,6 +614,7 @@ FILE PATHS:
 HTML Output:  {config['output_html_file']}
 JSON Output:  {config['output_json_file'] or 'Not enabled'}
 Cache Dir:    {config['image_cache_dir']}
+Image Cache:  {cache_enabled}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REFRESH SETTINGS:
@@ -630,9 +631,9 @@ You can now run the main Sonarr Calendar script:
         
         messagebox.showinfo("Configuration Saved", summary)
     
-    # v1.0.0: Load configuration
+    # v1.0.0: Load configuration (updated v2.2.0 to load enable_image_cache)
     def load_configuration(self):
-        """Load configuration from hidden file - Added in v1.0.0"""
+        """Load configuration from hidden file - Added in v1.0.0, updated v2.2.0"""
         if CONFIG_FILE.exists():
             try:
                 with open(CONFIG_FILE, 'r') as f:
@@ -663,6 +664,9 @@ You can now run the main Sonarr Calendar script:
                 refresh_hours = config.get('refresh_interval_hours', 6)
                 self.refresh_interval.set(refresh_hours)
                 
+                # v2.2.0: Load enable_image_cache (default True if missing)
+                self.enable_cache_var.set(config.get('enable_image_cache', True))
+                
                 self.status_var.set(f"📂 Configuration loaded from {CONFIG_FILE.name}")
                 
             except Exception as e:
@@ -672,9 +676,9 @@ You can now run the main Sonarr Calendar script:
             self.status_var.set("ℹ️ No existing configuration found. Using defaults.")
             self.reset_defaults()
     
-    # v1.0.0: Reset to defaults (updated to use execution directory)
+    # v1.0.0: Reset to defaults (updated v2.2.0 to include enable_image_cache)
     def reset_defaults(self):
-        """Reset to default values - Added in v1.0.0"""
+        """Reset to default values - Added in v1.0.0, updated v2.2.0"""
         self.sonarr_url.delete(0, tk.END)
         self.sonarr_url.insert(0, "http://localhost:8989")
         
@@ -700,6 +704,9 @@ You can now run the main Sonarr Calendar script:
         self.image_cache.insert(0, str(default_cache))
         
         self.refresh_interval.set(6)
+        
+        # v2.2.0: Enable image cache by default
+        self.enable_cache_var.set(True)
         
         self.status_var.set("🔄 Reset to default values")
 

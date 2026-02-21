@@ -76,12 +76,11 @@ class HTMLGenerator:
             episodes=episodes,
             date_range=date_range,
             config=self.config,
-            version="3.0.2",
+            version=__version__,                      # <-- use imported version
             sonarr_icon_base64=SONARR_ICON_BASE64,
             overall_stats=overall_stats,
             completed_seasons=completed_seasons,
             DISPLAY_EPISODES_LIMIT=2,
             EPISODE_ITEM_HEIGHT=68,
             EXPAND_BUTTON_HEIGHT=42
-
         )

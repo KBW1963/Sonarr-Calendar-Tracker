@@ -2,11 +2,11 @@
     "sonarr_url": "http://localhost:8989",
     "sonarr_api_key": "YOUR_API_KEY",
     "days_past": 7,
-    "days_future": 7,
+    "days_future": 30,
     "output_html_file": "sonarr_calendar.html",
     "output_json_file": "sonarr_data.json",
     "image_cache_dir": "sonarr_images",
-    "refresh_interval_hours": 6,
-    "html_theme": "dark",
-    "grid_columns": 4
+    "enable_image_cache": true,
+    "image_quality": "fanart",
+    "refresh_interval_hours": 6    
 }

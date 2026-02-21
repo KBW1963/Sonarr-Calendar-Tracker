@@ -212,10 +212,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Refresh interval in hours.
 
 ---
-
-## [2.6.0] - 2026-02-18 (Summary)
-- **Fanart priority** implemented in main application.
-- Configuration file now searched in user's home directory.
-- CLI config tool v3.1.2 fixes NameError.
-- CLI config tool now saves config in home directory.
-- All scripts updated for better cross‑platform reliability.

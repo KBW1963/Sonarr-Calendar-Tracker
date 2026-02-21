@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, UTC
 import base64
 import logging
 
+from sonarr_calendar import __version__   # <-- import the version
 from sonarr_calendar.models import ProcessedShow
 from sonarr_calendar.utils import (
     DateRange,
@@ -82,4 +83,5 @@ class HTMLGenerator:
             DISPLAY_EPISODES_LIMIT=2,
             EPISODE_ITEM_HEIGHT=68,
             EXPAND_BUTTON_HEIGHT=42
+
         )

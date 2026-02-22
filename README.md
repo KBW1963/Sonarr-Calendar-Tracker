@@ -166,17 +166,17 @@ Main Application (`sonarr_calendar/`)
 sonarr-calendar/
 ├── src/
 │ └── sonarr_calendar/
-│ ├── init.py
-│ ├── main.py
-│ ├── cli.py
-│ ├── config.py
-│ ├── api_client.py
-│ ├── models.py
-│ ├── image_cache.py
-│ ├── html_generator.py
-│ ├── utils.py
-│ └── templates/
-│   └── calendar.html.j2
+│     ├── init.py
+│     ├── main.py
+│     ├── cli.py
+│     ├── config.py
+│     ├── api_client.py
+│     ├── models.py
+│     ├── image_cache.py
+│     ├── html_generator.py
+│     ├── utils.py
+│     └── templates/
+│           └── calendar.html.j2
 ├── sonarr_config_cli.py # Interactive CLI configuration tool (v3.1.3)
 ├── sonarr_calendar_config.py # Simple GUI configuration tool (v2.2.4)
 ├── requirements.txt

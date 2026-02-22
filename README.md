@@ -176,7 +176,7 @@ sonarr-calendar/
 │ ├── html_generator.py
 │ ├── utils.py
 │ └── templates/
-│ └── calendar.html.j2
+│   └── calendar.html.j2
 ├── sonarr_config_cli.py # Interactive CLI configuration tool (v3.1.3)
 ├── sonarr_calendar_config.py # Simple GUI configuration tool (v2.2.4)
 ├── requirements.txt

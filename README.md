@@ -71,7 +71,7 @@ Follow the prompts. The configuration file will be saved in your home directory 
 
 Option B – Simple GUI tool (if you prefer a graphical interface)
 ```bash
-python `sonarr_calendar_config.py`
+python sonarr_calendar_config.py
 ```
 This minimal GUI asks for the essential settings (Sonarr URL, API key, output HTML file) and uses sensible defaults for everything else.
 

@@ -49,38 +49,52 @@ cd sonarr_calendar
 ```bash
 pip install -r requirements.txt
 ```
-### 3. Configure the application
-You have two ways to create the configuration file:
+
+### 3. Install the package (recommended for easy use)
+This creates a command‑line script `sonarr-calendar` that you can run from anywhere.
+
+```bash
+pip install -e .
+```
+
+---
+
+### 4. Configure the application
+You have a number of ways to create the configuration file:
 
 Option A – Use one of the interactive configuration scripts (recommended). Refer to the config apps folder
 ```bash
 python sonarr_config_cli.py
 ```
 
-Follow the prompts. The configuration file will be saved in your home directory under .sonarr_calendar_config/ to avoid permission issues.
+Follow the prompts. The configuration file will be saved in your home directory under `~/.sonarr_calendar_config/` to avoid permission issues.
 
-Option B – Create the file manually
+Option B – Simple GUI tool (if you prefer a graphical interface)
+```bash
+python `sonarr_calendar_config.py`
+```
+This minimal GUI asks for the essential settings (Sonarr URL, API key, output HTML file) and uses sensible defaults for everything else.
 
-Create a file named .sonarr_calendar_config.json in one of the following locations (searched in order):
+Option C – Create the file manually
+
+Create a file named `.sonarr_calendar_config.json` in one of the following locations (searched in order):
 
 - Current working directory
-- Same directory as the script (src/sonarr_calendar/)
-- Parent of the script directory (src/)
-- Your home directory (~/.sonarr_calendar_config/)
+- Same directory as the script (`src/sonarr_calendar/`)
+- Parent of the script directory (`src/`)
+- Your home directory (`~/.sonarr_calendar_config/`)
 
 Minimal configuration:
 ```json
 {
     "sonarr_url": "http://localhost:8989",
     "sonarr_api_key": "YOUR_API_KEY",
-    "days_past": 7,
-    "days_future": 7,
     "output_html_file": "sonarr_calendar.html"
 }
 ```
 See Configuration for all available options.
 
-### 4.  Run the calendar generator
+### 5.  Run the calendar generator
 ```bash
 # One‑time run. Runs once and exits.
 python -m sonarr_calendar --once
@@ -96,22 +110,24 @@ All settings are optional except `sonarr_url` and `sonarr_api_key`. Defaults are
 |-------|-------------|---------|
 |`sonarr_url`| Your Sonarr instance URL (including port) | required
 |`sonarr_api_key`| API key from Sonarr (Settings → General)| required
-|`days_past`|Number of past days to include | 7
-|`days_future`|	Number of future days to include| 7 
-|`output_html_file`	| Path where the HTML file will be save	| sonarr_calendar.html (in current dir)
-|`output_json_file`| Optional JSON output (metadata only)| null (no JSON)
-|`image_cache_dir`| Directory for cached images	|sonarr_images (in current dir)
-|`refresh_interval_hours`| Hours between auto‑refreshes	|6
-|`html_theme`|dark or light	|dark
-|`image_quality`|Preferred image type (hint; actual priority is hardcoded: fanart → poster → banner) | fanart
-|`enable_image_cache`| Whether to cache images locally	|true (recommended)
+|`days_past`|Number of past days to include | `7`
+|`days_future`|	Number of future days to include| `7` 
+|`output_html_file`	| Path where the HTML file will be save	| `sonarr_calendar.html` (in current dir)
+|`output_json_file`| Optional JSON output (metadata only)| `null` (no JSON)
+|`image_cache_dir`| Directory for cached images	|`sonarr_images` (in current dir)
+|`refresh_interval_hours`| Hours between auto‑refreshes	|`6`
+|`html_theme`|`dark` or `light`	|`dark`
+|`image_quality`|Preferred image type (hint; actual priority is hardcoded: fanart → poster → banner) | `fanart`
+|`enable_image_cache`| Whether to cache images locally	|`true` (recommended)
+| `html_title` | Browser tab title - `"html_title": "Your title"` | `Sonarr Calendar Pro` (default)
 
+*All fields except `sonarr_url` and `sonarr_api_key` are optional. If omitted, the defaults shown are used. The configuration tools generate a minimal file; you can add additional fields manually to override defaults.*
 
 ### 📁 Configuration File Location
-The configuration script (sonarr_config_cli.py) saves the file in your home directory:
+The configuration script (`sonarr_config_cli.py`) saves the file in your home directory:
 
-- Windows: C:\Users\YourName\.sonarr_calendar_config\.sonarr_calendar_config.json
-- Linux/macOS: /home/yourname/.sonarr_calendar_config/.sonarr_calendar_config.json
+- Windows: `C:\Users\YourName\.sonarr_calendar_config\.sonarr_calendar_config.json`
+- Linux/macOS: `/home/yourname/.sonarr_calendar_config/.sonarr_calendar_config.json`
 The main application searches multiple locations (current directory, script directory, project root, and home directory) so you can place the file wherever convenient.
 ---
 
@@ -124,7 +140,8 @@ To force a refresh of cached images, delete the contents of your image_cache_dir
 ### 🔧 Troubleshooting
 |Problem	|Solution |
 |---------|---------|
-|'ImportError: No module named jinja2'	|Run `pip install -r requirements.txt`
+|`ImportError: No module named jinja2`	|Run `pip install -r requirements.txt`
+|`ModuleNotFoundError: No module named 'sonarr_calendar'`| Install the package: `pip install -e .`
 |Configuration file not found	|Ensure the file exists in one of the search paths. Run `sonarr_config_cli.py` to create it or manually create.
 |Sonarr connection failed|	Verify `sonarr_url` and `sonarr_api_key`. Ensure Sonarr is reachable from your machine.
 |No episodes shown	|Check your `days_past` and `days_future` settings. The date range might not contain any air dates.
@@ -144,6 +161,32 @@ Main Application (sonarr_calendar/)
 - `utils.py` – Shared utilities (interrupt handler, date formatting, etc.).
 ---
 
+### 📜 Project Structure
+```
+sonarr-calendar/
+├── src/
+│ └── sonarr_calendar/
+│ ├── init.py
+│ ├── main.py
+│ ├── cli.py
+│ ├── config.py
+│ ├── api_client.py
+│ ├── models.py
+│ ├── image_cache.py
+│ ├── html_generator.py
+│ ├── utils.py
+│ └── templates/
+│ └── calendar.html.j2
+├── sonarr_config_cli.py # Interactive CLI configuration tool (v3.1.3)
+├── sonarr_calendar_config.py # Simple GUI configuration tool (v2.2.4)
+├── requirements.txt
+├── setup.py
+├── README.md
+├── CHANGELOG.md
+└── LICENSE
+
+```
+---
 ## 📄 License
 This project is licensed under the MIT License – see the LICENSE file for details.
 

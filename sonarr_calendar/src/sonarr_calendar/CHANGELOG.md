@@ -6,37 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ---
 
-## [Unreleased]
-
----
-
 ## Sonarr Calendar Tracker (Main Application)
 
-
-### [2.7.0] - 2026-02-19
+### [2.7.0] - 2026-02-22
 #### Added
-- `get_image_by_type()` in `image_cache.py` to fetch a specific image type (e.g., poster) without altering the main fanart priority.
-- `poster_image` field in `ProcessedShow` dataclass, storing the dedicated poster URL for each show.
-- **Recently Completed Seasons section now uses poster images** for a more professional look, while main show cards continue to use fanart.
+- Display version now includes the primary image type – e.g., `2.7.0-fanart` in HTML footer and JSON output. The image type suffix is defined in `__init__.py` (`__image_type__`) and automatically appended.
+- JSON output now correctly uses the dynamic version (`__display_version__`), ensuring consistency with the HTML footer.
 
 #### Changed
-- `calculate_completed_seasons_in_range()` now uses `show.poster_image` instead of the fanart URL.
-
-### [2.6.0] - 2026-02-18
-#### Changed
-- **Image priority** – The application now uses **fanart** as the primary image for show cards, with fallback to poster and then banner. This provides wider, more scenic images.
-- Modified `get_poster_url()` in `image_cache.py` to implement priority order: fanart → poster → banner → any image.
-- Updated `config.py` to search for configuration file in the user's home directory (`~/.sonarr_calendar_config/`) as well as the traditional locations.
-- **Configuration file location** – The main application now also looks in `~/.sonarr_calendar_config/` (where the config script saves) to avoid permission issues.
-- Updated help text in `cli.py` to mention the new config search path.
+- `setup.py` now reads the version dynamically from `__init__.py` (via `get_version()`), so the package version always matches the internal version.
+- Removed all traces of the old monolithic script; the application is now purely modular and installed via `pip`.
 
 #### Fixed
-- Resolved indentation error in `cli.py` that caused a `SyntaxError` when running the script.
-- Ensured that the image cache correctly downloads fanart when available.
+- JSON version no longer shows stale `2.6.0`; it now reflects the actual version.
+- Indentation errors in `html_generator.py` and `cli.py` resolved.
+
+### [2.6.0] - 2026-02-18
+#### Added
+- **Fanart priority** – the application now uses fanart as the primary image for show cards, with fallback to poster and banner.
+- Configuration file search now includes the user's home directory (`~/.sonarr_calendar_config/`) to match the config tool's new default location.
+- Help text in `cli.py` updated to mention the new config search path.
+
+#### Fixed
+- Indentation error in `cli.py` that caused a `SyntaxError`.
 
 ### [2.5.1] - 2026-02-16
 #### Added
-- Graceful interrupt handling – Press `Ctrl+C` once to exit cleanly, twice to force quit.
+- Graceful interrupt handling – press `Ctrl+C` once to exit cleanly, twice to force quit.
 - Coloured terminal output with emojis.
 - OS‑aware date formatting (system locale settings).
 
@@ -48,7 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Last execution date/time in footer.
 - Version number in footer.
 - Next update projection in footer.
-- Cleaner footer layout.
+- Cleaner footer layout (removed redundant instruction text).
 
 #### Fixed
 - Complete Shows KPI now correctly counts shows that completed their **current season**.
@@ -123,6 +119,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ---
 
 ## CLI Configuration Tool (`sonarr_config_cli.py`)
+
+### [3.1.3] - 2026-02-21
+#### Added
+- Platform‑specific paste instructions in API key prompts (Ctrl+V on Windows, Ctrl+Shift+V/right‑click on Unix).
+- Display of the loaded configuration file path at startup.
+
+#### Fixed
+- Improved masked input to better handle pasted text; right‑click paste now works more reliably on supported terminals.
 
 ### [3.1.2] - 2026-02-18
 #### Fixed
@@ -210,5 +214,92 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Date range configuration.
 - File path configuration.
 - Refresh interval in hours.
+
+---
+
+## GUI Configuration Tool (`sonarr_calendar_config.py`)
+
+### [2.2.4] - 2026-02-22
+#### Changed
+- **Summary dialog layout improved**: The Close button is now always visible at the bottom without needing to scroll. Default window size increased to `700x500`, with proper `pack` layout that keeps the button fixed while the text area expands.
+
+### [2.2.3] - 2026-02-22
+#### Added
+- Configuration now saved in the user's home directory (`~/.sonarr_calendar_config/`) by default, avoiding permission issues.
+- When loading, the tool searches the home directory first, then falls back to the old script directory (migration support).
+- Displays the full path of the loaded configuration file in the status bar and a message box.
+
+#### Changed
+- Summary dialog button renamed from "OK" to "Close" for clarity.
+- Version dates updated to 2026 throughout the script.
+
+### [2.2.2] - 2026-02-21
+#### Fixed
+- Right‑click paste now correctly uses the `<<Paste>>` virtual event, ensuring reliable pasting.
+- Displays the full path of the loaded configuration file in status bar and dialog.
+
+### [2.2.1] - 2026-02-20
+#### Fixed
+- Minor fixes and improvements.
+
+### [2.2.0] - 2026-02-19
+#### Added
+- Checkbox to enable/disable image caching.
+- Fixed double‑paste in input fields.
+- Increased window height to prevent bottom truncation.
+- Configuration now includes `enable_image_cache` (default `true`).
+
+### [2.1.0] - 2026-02-19
+#### Added
+- Right-click context menu for all input fields (Cut, Copy, Paste, Select All).
+- Keyboard shortcuts (Ctrl+X/C/V/A, Cmd+X/C/V/A on macOS).
+- Cross-platform clipboard support.
+
+### [2.0.0] - 2026-02-18
+#### Added
+- Redesigned layout with sections and improved spacing.
+- Connection testing with visual feedback.
+- API key visibility toggle (show/hide).
+- Configuration validation before saving.
+- Summary dialog after saving.
+- Status bar for user feedback.
+- Platform-specific window icon support.
+- Window centering on all platforms.
+
+### [1.3.0] - 2026-02-17
+#### Added
+- Configuration validation.
+- Summary display after save.
+- Improved error messages.
+- Better layout with section headers.
+
+### [1.2.0] - 2026-02-16
+#### Added
+- Connection test button with status display.
+- API key visibility toggle.
+- Check for `requests` library (optional).
+
+### [1.1.0] - 2026-02-15
+#### Added
+- Platform detection for paths and clipboard.
+- Cross-platform directory/file browsers.
+- Window icon support (Windows, Linux, macOS).
+- Window centering.
+
+### [1.0.0] - 2026-02-14
+#### Added
+- Basic GUI for configuration.
+- Sonarr URL, API key, date range, file paths, refresh interval.
+- Save/load/reset functionality.
+
+---
+
+## Infrastructure & Documentation
+
+### [2026-02-22]
+#### Changed
+- `setup.py` now dynamically reads the version from `src/sonarr_calendar/__init__.py` instead of hardcoding it. This ensures the package version always matches the internal application version.
+- The project is now installable via `pip install -e .` and the `sonarr-calendar` console script works reliably from any location.
+- Removed the obsolete monolithic `sonarr_calendar.py` script.
 
 ---

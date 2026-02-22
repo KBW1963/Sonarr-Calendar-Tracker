@@ -124,11 +124,11 @@ All settings are optional except `sonarr_url` and `sonarr_api_key`. Defaults are
 *All fields except `sonarr_url` and `sonarr_api_key` are optional. If omitted, the defaults shown are used. The configuration tools generate a minimal file; you can add additional fields manually to override defaults.*
 
 ### 📁 Configuration File Location
+The main application searches multiple locations (current directory, script directory, project root, and home directory) so you can place the file wherever convenient.
 The configuration script (`sonarr_config_cli.py`) saves the file in your home directory:
 
 - Windows: `C:\Users\YourName\.sonarr_calendar_config\.sonarr_calendar_config.json`
 - Linux/macOS: `/home/yourname/.sonarr_calendar_config/.sonarr_calendar_config.json`
-The main application searches multiple locations (current directory, script directory, project root, and home directory) so you can place the file wherever convenient.
 ---
 
 ### 🖼️ Image Priority

@@ -151,7 +151,7 @@ To force a refresh of cached images, delete the contents of your image_cache_dir
 ---
 
 ### 📜 Scripts Overview
-Main Application (sonarr_calendar/)
+Main Application (`sonarr_calendar/`)
 - `cli.py` – Command‑line entry point, handles auto‑refresh and interrupt.
 - `config.py` – Configuration loading and validation.
 - `api_client.py` – Sonarr API client with retries.

@@ -97,7 +97,7 @@ Orchestrates the main workflow:
 
 Interactive wizard for creating and managing configuration files.
 
-Features:
+- **Features:**
 
 - Real‑time API key masking with platform‑specific paste instructions.
 - Connection testing (if `requests` is installed).
@@ -105,6 +105,7 @@ Features:
 - Configuration saved in user's home directory (`~/.sonarr_calendar_config/`).
 - Pre‑execution OS validation and dependency checking.
 - Quick mode for non‑interactive setup.
+- **Input sanitization** – accidental arrow keys or other control characters are automatically removed, preventing path corruption.
 - Graceful interrupt handling (`Ctrl+C`).
 
 ## `sonarr_calendar_config.py`

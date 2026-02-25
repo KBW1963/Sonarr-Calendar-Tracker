@@ -97,7 +97,7 @@ Orchestrates the main workflow:
 
 Interactive wizard for creating and managing configuration files.
 
-- **Features:**
+Features:
 
 - Real‑time API key masking with platform‑specific paste instructions.
 - Connection testing (if `requests` is installed).

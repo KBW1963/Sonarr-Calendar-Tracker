@@ -13,9 +13,9 @@ Track upcoming episodes over a specified date range, monitor overall progress, a
 **NOTE: I am not a SW developer or a coder by trade. I have a little knowledge to be dangerous and have used some skills from my past working life and my hobbyist approach to build this project. 
 And YES! a lot of research was needed to help me understand and develop the code, along with some AI suggestions, which to be fair is hard to not do with search engines today.
 
-Deployment has been tested via x64 and Linux.
+The tracker has been designed to run locally on your own hardware and network. It hasn't been designed to be exposed to the outside world. I have the Tracker running on a LXC under Proxmox. The HTML file is saved to an SMB share hosted on TrueNAS (where my ARR stack is deployed). The HTML is then accessed via a dashboard. Deployment has been tested via x64 (hence GUI config version) and Linux (config cli version which BTW is cross-platform).
 
-I am happy with it for my needs and will NOT be constantly developing it, sorry 😞. I have it running on a LXC under Proxmox that saves the html to an SMB share hosted on TrueNAS (where my ARR stack is deployed). The html is then accessed via a dashboard.
+I am happy with it for my needs and will NOT be constantly developing it, sorry 😞. 
 
 I am releasing it to the community AS IS and provide no support or warranty. Use at your own risk.  ALWAYS backup before installing.
 

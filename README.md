@@ -200,5 +200,7 @@ sonarr-calendar/
 ## 📄 License
 This project is licensed under the MIT License – see the LICENSE file for details.
 
+This project is for personal / self-hosted use.
+
 Happy tracking! 📺
 

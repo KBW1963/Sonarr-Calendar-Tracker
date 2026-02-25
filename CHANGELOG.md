@@ -120,6 +120,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## CLI Configuration Tool (`sonarr_config_cli.py`)
 
+### [3.1.5] - 2026-02-24
+#### Added
+- Input sanitization for non‑password fields to remove terminal escape sequences (e.g., from arrow keys).  
+  This prevents path corruption like the one experienced in issue #... (where stray characters appeared in file paths).
+- Uses regex to strip ASCII control characters from user input.
+
+- #### Changed
+- `get_input()` now passes non‑password input through `_sanitize_input()` before returning it.
+
+#### Security
+- No change to password handling – `getpass` remains untouched.
+
+### [3.1.4] - 2026-02-23
+- Replaced custom raw input with `getpass` for reliability; no more terminal hangs.
+
 ### [3.1.3] - 2026-02-21
 #### Added
 - Platform‑specific paste instructions in API key prompts (Ctrl+V on Windows, Ctrl+Shift+V/right‑click on Unix).
@@ -301,5 +316,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `setup.py` now dynamically reads the version from `src/sonarr_calendar/__init__.py` instead of hardcoding it. This ensures the package version always matches the internal application version.
 - The project is now installable via `pip install -e .` and the `sonarr-calendar` console script works reliably from any location.
 - Removed the obsolete monolithic `sonarr_calendar.py` script.
+
 
 ---

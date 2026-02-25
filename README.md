@@ -10,11 +10,16 @@ Track upcoming episodes over a specified date range, monitor overall progress, a
 ### [Screenshot] - [https://github.com/KBW1963/main/sonarr_calendar_screenshot.png](https://github.com/KBW1963/sonarr_calendar/blob/main/sonarr_calendar_screenshot.png)
 
 ---
-**NOTE: I am not a SW developer or a coder by trade. I am just using some skills from my past and my hobbyist approach to build this project. 
+**NOTE: I am not a SW developer or a coder by trade. I have a little knowledge to be dangerous and have used some skills from my past working life and my hobbyist approach to build this project. 
 And YES! a lot of research was needed to help me understand and develop the code, along with some AI suggestions, which to be fair is hard to not do with search engines today.
 
-So, please be understanding! ☺️.
+Deployment has been tested via x64 and Linux.
 
+I am happy with it for my needs and will NOT be constantly developing it, sorry 😞. I have it running on a LXC under Proxmox that saves the html to an SMB share hosted on TrueNAS (where my ARR stack is deployed). The html is then accessed via a dashboard.
+
+I am releasing it to the community AS IS and provide no support or warranty. Use at your own risk.  ALWAYS backup before installing.
+
+So, please be understanding! ☺️.
 ---
 
 ## ✨ Features
@@ -162,6 +167,8 @@ Main Application (`sonarr_calendar/`)
 - `image_cache.py` – Parallel image downloading with fanart priority.
 - `html_generator.py` – Jinja2 HTML generation.
 - `utils.py` – Shared utilities (interrupt handler, date formatting, etc.).
+
+See `SYNOPSIS.md` for further details about the scripts.
 ---
 
 ### 📜 Project Structure

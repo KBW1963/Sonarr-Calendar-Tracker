@@ -20,11 +20,13 @@ v3.1.0 (2026-02-18) - Added image cache enable/disable option
 v3.1.1 (2026-02-18) - Fixed file permission issues (save in home dir)
 v3.1.2 (2026-02-18) - Fixed NameError in connection test
 v3.1.3 (2026-02-21) - Improved paste support and config location display
-  - Enhanced masked input to better handle pasted text (works with right-click or Ctrl+V)
-  - Added platform-specific paste instructions in prompts
-  - Displays the full path of the loaded configuration file during startup
+v3.1.4 (2026-02-23) - Replaced custom raw input with getpass for reliability
+v3.1.5 (2026-02-24) - Added input sanitization to remove terminal escape sequences
+  - Prevents path corruption when users accidentally use arrow keys during input
+  - Applies only to non‑password fields (file paths, URLs, etc.)
+  - Uses regex to strip ASCII control characters
 
-Current Version: v3.1.3
+Current Version: v3.1.5
 """
 
 import json
@@ -33,7 +35,7 @@ import sys
 import platform
 import getpass
 import signal
-import subprocess
+import re
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
 import argparse
@@ -75,7 +77,7 @@ class PreFlightChecker:
     
     def print_header(self):
         print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.ENDC}")
-        print(f"{Colors.BOLD}{Colors.BLUE}🔍 Sonarr Calendar Pro - Pre-Flight Check v3.1.3{Colors.ENDC}")
+        print(f"{Colors.BOLD}{Colors.BLUE}🔍 Sonarr Calendar Pro - Pre-Flight Check v3.1.5{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.ENDC}\n")
     
     def print_success(self, text): print(f"{Colors.GREEN}✅ {text}{Colors.ENDC}")
@@ -229,69 +231,9 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# v3.1.3: Improved paste support and platform-specific instructions
-def masked_input(prompt: str) -> str:
-    """Custom masked input with platform-specific paste instructions."""
-    if platform.system() == "Windows":
-        print(f"{Colors.BLUE}💡 Tip: Use Ctrl+V to paste (right-click may not work in raw mode){Colors.ENDC}")
-    else:
-        print(f"{Colors.BLUE}💡 Tip: Use Ctrl+Shift+V or right-click to paste{Colors.ENDC}")
-    print(prompt, end='', flush=True)
-    value = []
-    if platform.system() == "Windows":
-        try:
-            import msvcrt
-            while True:
-                if msvcrt.kbhit():
-                    char = msvcrt.getch()
-                    if char in (b'\r', b'\n'):  # Enter
-                        print()
-                        break
-                    elif char in (b'\x08', b'\x7f'):  # Backspace
-                        if value:
-                            value.pop()
-                            sys.stdout.write('\b \b')
-                            sys.stdout.flush()
-                    else:
-                        try:
-                            decoded_char = char.decode('utf-8')
-                            value.append(decoded_char)
-                            sys.stdout.write('*')
-                            sys.stdout.flush()
-                        except:
-                            pass
-        except ImportError:
-            return getpass.getpass("")
-    else:
-        import termios
-        import tty
-        import select
-        old_settings = None
-        try:
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-            tty.setraw(fd)
-            while True:
-                if select.select([sys.stdin], [], [], 0.1)[0]:
-                    char = sys.stdin.read(1)
-                    if char in ('\r', '\n'):
-                        print()
-                        break
-                    elif char in ('\x7f', '\x08'):
-                        if value:
-                            value.pop()
-                            sys.stdout.write('\b \b')
-                            sys.stdout.flush()
-                    elif char == '\x03':
-                        raise KeyboardInterrupt
-                    else:
-                        value.append(char)
-                        sys.stdout.write('*')
-                        sys.stdout.flush()
-        finally:
-            if old_settings and fd:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ''.join(value)
+# ============================================================================
+# SONARRCLICONFIG CLASS
+# ============================================================================
 
 class SonarrCLIConfig:
     def __init__(self):
@@ -310,7 +252,7 @@ class SonarrCLIConfig:
     def check_existing_config(self):
         if CONFIG_FILE.exists():
             self.print_header("EXISTING CONFIGURATION FOUND")
-            print(f"Found existing configuration file: {CONFIG_FILE}")  # <-- display path
+            print(f"Found existing configuration file: {CONFIG_FILE}")
             try:
                 with open(CONFIG_FILE, 'r') as f:
                     self.config = json.load(f)
@@ -353,19 +295,58 @@ class SonarrCLIConfig:
     def print_info(self, text):    print(f"{Colors.BLUE}ℹ️  {text}{Colors.ENDC}")
     def print_bullet(self, text):  print(f"  • {text}")
     
+    # ==========================================================================
+    # NEW: Input sanitization helper (v3.1.5)
+    # ==========================================================================
+    def _sanitize_input(self, value: str) -> str:
+        """
+        Remove control characters (including terminal escape sequences) from input.
+        Preserves printable characters and newlines (though newlines are unlikely in paths).
+        """
+        # Remove ASCII control characters (0x00-0x08, 0x0b, 0x0c, 0x0e-0x1f, 0x7f-0x9f)
+        # This also removes ESC (0x1b) and other unwanted codes.
+        return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', value)
+
+    # ==========================================================================
+    # MODIFIED get_input – now sanitizes non‑password input (v3.1.5)
+    # ==========================================================================
     def get_input(self, prompt: str, default: str = "", password: bool = False, mask_default: bool = False, field_name: str = "") -> str:
+        """
+        Get user input with optional default value.
+        For password fields, uses getpass (no echo). After input, shows 40 asterisks as confirmation.
+        For non‑password fields, input is sanitized to remove control characters.
+        """
         display_default = default
         if mask_default and default and len(default) > 6:
+            # Show only last 6 characters for API keys
             display_default = '•' * (len(default) - 6) + default[-6:]
+        
         if default:
-            full_prompt = f"{prompt} [{display_default}]: " if mask_default else f"{prompt} [{default}]: "
+            if mask_default:
+                full_prompt = f"{prompt} [{display_default}]: "
+            else:
+                full_prompt = f"{prompt} [{default}]: "
         else:
             full_prompt = f"{prompt}: "
+        
         if password:
-            return masked_input(full_prompt) or default
+            # Use getpass for secure input (no echo)
+            print(f"{Colors.BLUE}⏎ Type or paste your API key (input will be hidden){Colors.ENDC}")
+            value = getpass.getpass(full_prompt)
+            if value:
+                # Visual confirmation: show 40 asterisks
+                print(f"{Colors.GREEN}✓ API key received ({len(value)} characters): {'•' * 40}{Colors.ENDC}")
+                return value.strip()
+            else:
+                return default if default else ""
         else:
-            val = input(full_prompt)
-            return val.strip() if val.strip() else default
+            value = input(full_prompt)
+            if value.strip():
+                # Sanitize the input to remove any control characters
+                clean_value = self._sanitize_input(value.strip())
+                return clean_value
+            else:
+                return default
     
     def get_yes_no(self, prompt: str, default: bool = True) -> bool:
         default_str = "Y/n" if default else "y/N"
@@ -380,20 +361,25 @@ class SonarrCLIConfig:
         return url.startswith(('http://', 'https://'))
     
     def test_connection(self, url: str, api_key: str) -> bool:
+        """Test connection to Sonarr."""
         if not self.requests_available:
             self.print_warning("requests library not installed. Cannot test connection.")
             self.print_info("Install with: pip install requests")
             return False
+        
         self.print_info("Testing connection to Sonarr...")
+        
         try:
             headers = {"X-Api-Key": api_key}
-            resp = self.requests.get(f"{url}/api/v3/system/status", headers=headers, timeout=10)
-            if resp.status_code == 200:
-                version = resp.json().get('version', 'Unknown')
+            response = self.requests.get(f"{url}/api/v3/system/status", headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                version = data.get('version', 'Unknown')
                 self.print_success(f"Connected! Sonarr v{version}")
                 return True
             else:
-                self.print_error(f"Connection failed (Status: {resp.status_code})")
+                self.print_error(f"Connection failed (Status: {response.status_code})")
                 return False
         except self.requests.exceptions.ConnectionError:
             self.print_error("❌ Cannot connect to Sonarr - Check URL and network")
@@ -613,11 +599,11 @@ class SonarrCLIConfig:
         self.print_bullet(f"Execution Directory: {EXECUTION_DIR}")
         self.print_bullet(f"Config File: {CONFIG_FILE}")
         print(f"\n{Colors.BOLD}Version:{Colors.ENDC}")
-        self.print_bullet(f"v3.1.3 (2026-02-21) - Improved paste support and config location display")
+        self.print_bullet(f"v3.1.5 (2026-02-24) - Input sanitization added")
     
     def save_configuration(self):
         try:
-            CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
             with open(CONFIG_FILE, 'w') as f:
                 json.dump(self.config, f, indent=4)
             self.print_success(f"Configuration saved to {CONFIG_FILE}")
@@ -627,16 +613,16 @@ class SonarrCLIConfig:
             return False
     
     def run_configuration_wizard(self):
-        self.print_header("SONARR CALENDAR PRO - CLI CONFIGURATION v3.1.3")
+        self.print_header("SONARR CALENDAR PRO - CLI CONFIGURATION v3.1.5")
         print("Welcome to the Sonarr Calendar configuration tool!")
         print(f"Platform: {self.system}")
         print(f"Execution Directory: {EXECUTION_DIR}")
         print("This wizard will help you set up your calendar preferences.\n")
         print("💡 Tip: Use Ctrl+Shift+C/V or right-click to copy/paste in most terminals")
-        print("🔒 API keys are masked in real-time for security")
-        print("   • Asterisks appear as you type or paste")
+        print("🔒 API keys are masked (input hidden) for security")
+        print("   • No asterisks appear while typing, but input is secure")
         print("   • 40 asterisks shown as confirmation after input")
-        print("   • Backspace works normally")
+        print("   • Input sanitization now prevents stray characters from arrow keys")
         print("   • Press Ctrl+C at any time to exit gracefully\n")
         try:
             self.configure_sonarr()
@@ -657,7 +643,7 @@ class SonarrCLIConfig:
             sys.exit(0)
     
     def quick_configure(self, args):
-        self.print_header("QUICK CONFIGURATION v3.1.3")
+        self.print_header("QUICK CONFIGURATION v3.1.5")
         if args.url: self.config['sonarr_url'] = args.url
         if args.api_key: self.config['sonarr_api_key'] = args.api_key
         if args.days_past: self.config['days_past'] = args.days_past
@@ -670,6 +656,16 @@ class SonarrCLIConfig:
             self.config['enable_image_cache'] = args.enable_image_cache
         else:
             self.config['enable_image_cache'] = self.config.get('enable_image_cache', True)
+        # Set defaults for any missing fields
+        self.config.setdefault('sonarr_url', 'http://localhost:8989')
+        self.config.setdefault('sonarr_api_key', '')
+        self.config.setdefault('days_past', 7)
+        self.config.setdefault('days_future', 30)
+        self.config.setdefault('output_html_file', str(EXECUTION_DIR / "sonarr_calendar.html"))
+        self.config.setdefault('output_json_file', None)
+        self.config.setdefault('image_cache_dir', str(EXECUTION_DIR / "sonarr_images"))
+        self.config.setdefault('refresh_interval_hours', 6)
+        self.config.setdefault('enable_image_cache', True)
         self.show_config_summary()
         if self.save_configuration():
             print(f"\n{Colors.GREEN}Quick configuration complete!{Colors.ENDC}")
@@ -692,7 +688,7 @@ class SonarrCLIConfig:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Sonarr Calendar Pro - CLI Configuration Tool v3.1.3",
+        description="Sonarr Calendar Pro - CLI Configuration Tool v3.1.5",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

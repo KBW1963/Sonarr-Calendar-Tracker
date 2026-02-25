@@ -98,14 +98,16 @@ See Configuration for all available options.
 ### 5.  Run the calendar generator
 ```bash
 # One‑time run. Runs once and exits.
-python -m sonarr_calendar --once
+python -m sonarr_calendar --once or python3 -m sonarr_calendar --once
 
 # Auto‑refresh mode. Refreshers based on config setting.
-python -m sonarr_calendar
+python -m sonarr_calendar or python3 -m sonarr_calendar
 ```
 ---
 ### ⚙️ Configuration
-All settings are optional except `sonarr_url` and `sonarr_api_key`. Defaults are shown below.
+All settings are optional except `sonarr_url` and `sonarr_api_key`. 
+
+Defaults are shown below.
 
 | Field |	Description |	Default
 |-------|-------------|---------|
@@ -166,20 +168,20 @@ Main Application (`sonarr_calendar/`)
 ```
 sonarr-calendar/
 ├── src/
-│ └── sonarr_calendar/
-│     ├── init.py
-│     ├── main.py
-│     ├── cli.py
-│     ├── config.py
-│     ├── api_client.py
-│     ├── models.py
-│     ├── image_cache.py
-│     ├── html_generator.py
-│     ├── utils.py
-│     └── templates/
+│   └── sonarr_calendar/
+│      ├── init.py
+│      ├── main.py
+│      ├── cli.py
+│      ├── config.py
+│      ├── api_client.py
+│      ├── models.py
+│      ├── image_cache.py
+│      ├── html_generator.py
+│      ├── utils.py
+│      └── templates/
 │           └── calendar.html.j2
-├── sonarr_config_cli.py # Interactive CLI configuration tool (v3.1.3)
-├── sonarr_calendar_config.py # Simple GUI configuration tool (v2.2.4)
+├── sonarr_config_cli.py
+├── sonarr_calendar_config.py
 ├── requirements.txt
 ├── setup.py
 ├── README.md

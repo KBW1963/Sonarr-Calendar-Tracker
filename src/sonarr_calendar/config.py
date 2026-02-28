@@ -1,5 +1,5 @@
 # src/sonarr_calendar/config.py
-import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -14,6 +14,7 @@ class Config:
     days_past: int
     days_future: int
     output_html_file: str
+    # Optional fields with defaults
     output_json_file: Optional[str] = None
     image_cache_dir: str = "sonarr_images"
     refresh_interval_hours: int = 6
@@ -31,41 +32,54 @@ class Config:
         if self.refresh_interval_hours <= 0:
             raise ValueError("refresh_interval_hours must be positive")
 
+def _get_env_bool(name: str, default: bool) -> bool:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val.lower() in ('true', '1', 'yes', 'y')
+
+def _get_env_int(name: str, default: int) -> int:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    try:
+        return int(val)
+    except ValueError:
+        logger.warning(f"Invalid integer for {name}, using default {default}")
+        return default
+
 def load_config(config_path: Optional[Path] = None) -> Config:
     """
-    Load configuration from a JSON file.
-    Search order:
-      1. Explicitly provided path.
-      2. Current working directory.
-      3. Directory of this script (src/sonarr_calendar).
-      4. Parent of the script directory (project root).
-      5. User's home directory ( ~/.sonarr_calendar_config/ ).
+    Load configuration from environment variables.
+    The config_path parameter is ignored; it's kept for compatibility with CLI.
     """
-    if config_path is None:
-        candidates = [
-            Path.cwd() / '.sonarr_calendar_config.json',
-            Path(__file__).parent / '.sonarr_calendar_config.json',
-            Path(__file__).parent.parent / '.sonarr_calendar_config.json',
-            Path.home() / '.sonarr_calendar_config' / '.sonarr_calendar_config.json',
-        ]
-        for candidate in candidates:
-            if candidate.exists():
-                config_path = candidate
-                logger.info(f"📄 Using configuration file: {config_path}")
-                print(f"DEBUG: Using config file: {config_path}")   # <-- add this
-                break
-        else:
-            raise FileNotFoundError(
-                f"Configuration file not found in any of:\n  " +
-                "\n  ".join(str(p) for p in candidates)
-            )
-    else:
-        if not config_path.exists():
-            raise FileNotFoundError(f"Specified configuration file not found: {config_path}")
-        logger.info(f"📄 Using configuration file: {config_path}")
-        print(f"DEBUG: Using config file: {config_path}")           # <-- add this
+    # Required variables – will raise KeyError if missing
+    required = {
+        'SONARR_URL': os.environ['SONARR_URL'],
+        'SONARR_API_KEY': os.environ['SONARR_API_KEY'],
+        'DAYS_PAST': _get_env_int('DAYS_PAST', None),
+        'DAYS_FUTURE': _get_env_int('DAYS_FUTURE', None),
+        'OUTPUT_HTML_FILE': os.getenv('OUTPUT_HTML_FILE'),
+    }
+    # Check required
+    missing = [k for k, v in required.items() if v is None]
+    if missing:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
-    with open(config_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    return Config(**data)
+    # Optional variables with defaults
+    config = Config(
+        sonarr_url=required['SONARR_URL'],
+        sonarr_api_key=required['SONARR_API_KEY'],
+        days_past=required['DAYS_PAST'],
+        days_future=required['DAYS_FUTURE'],
+        output_html_file=required['OUTPUT_HTML_FILE'],
+        output_json_file=os.getenv('OUTPUT_JSON_FILE'),
+        image_cache_dir=os.getenv('IMAGE_CACHE_DIR', 'sonarr_images'),
+        refresh_interval_hours=_get_env_int('REFRESH_INTERVAL_HOURS', 6),
+        html_theme=os.getenv('HTML_THEME', 'dark'),
+        grid_columns=_get_env_int('GRID_COLUMNS', 4),
+        image_quality=os.getenv('IMAGE_QUALITY', 'fanart'),
+        enable_image_cache=_get_env_bool('ENABLE_IMAGE_CACHE', True),
+        html_title=os.getenv('HTML_TITLE', 'Sonarr Calendar Pro'),
+    )
+    return config

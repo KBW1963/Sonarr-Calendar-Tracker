@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Sonarr](https://img.shields.io/badge/Sonarr-v3%2Fv4-orange)
 
-A beautiful, feature‑rich HTML dashboard for your Sonarr shows.  
+A beautiful, feature‑rich HTML dashboard for your [Sonarr](http://sonarr.tv) shows.  
 Track upcoming episodes over a specified date range, monitor overall progress, and see which seasons have been completed – all in a sleek, customisable interface.
 
 ### [Screenshot] - [https://github.com/KBW1963/main/sonarr_calendar_screenshot.png](https://github.com/KBW1963/sonarr_calendar/blob/main/sonarr_calendar_screenshot.png)

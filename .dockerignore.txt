@@ -1,0 +1,16 @@
+.git
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.coverage
+htmlcov
+sonarr_images
+sonarr_calendar.html
+sonarr_calendar_data.json
+.env
+# changelog.md
+changelog.md
+README.md
+docker-compose_TrueNAS.yml
+*.py

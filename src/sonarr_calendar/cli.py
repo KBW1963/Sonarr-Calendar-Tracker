@@ -8,11 +8,10 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from sonarr_calendar import __display_version__ as VERSION
 from sonarr_calendar.config import load_config, Config
 from sonarr_calendar.api_client import SonarrClient
 from sonarr_calendar.image_cache import ImageCache
-from sonarr_calendar.models import process_calendar_data
+from sonarr_calendar.models import process_calendar_data, calculate_overall_statistics, calculate_library_statistics
 from sonarr_calendar.html_generator import HTMLGenerator
 from sonarr_calendar.utils import (
     GracefulInterruptHandler,
@@ -20,6 +19,7 @@ from sonarr_calendar.utils import (
     format_date_for_display,
     DateRange
 )
+from sonarr_calendar import __display_version__
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,15 @@ def run_once(config: Config, handler: GracefulInterruptHandler, verbose: bool = 
 
         processed_shows = process_calendar_data(episodes, all_series, date_range, sonarr, config)
         logger.info("ℹ️  Generating HTML calendar...")
+
+        # Calculate two sets of statistics
+        library_stats = calculate_library_statistics(all_series)
+        logger.info(f"LIBRARY STATS: total_episodes_all={library_stats['total_episodes_all']}, total_downloaded_all={library_stats['total_downloaded_all']}, overall_progress={library_stats['overall_progress']}")
+        range_stats = calculate_overall_statistics(processed_shows, date_range)
+
         html_gen = HTMLGenerator(config)
-        html_content = html_gen.generate(processed_shows, episodes, date_range)
+        html_content = html_gen.generate(processed_shows, episodes, date_range, sonarr,
+                                         library_stats=library_stats, range_stats=range_stats)
         output_path = Path(config.output_html_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html_content, encoding='utf-8')
@@ -65,7 +72,9 @@ def run_once(config: Config, handler: GracefulInterruptHandler, verbose: bool = 
                     'total_days': date_range.total_days,
                 },
                 'total_shows': len(processed_shows),
-                'version': VERSION,
+                'library_stats': library_stats,
+                'range_stats': range_stats,
+                'version': __display_version__
             }
             json_path.write_text(json.dumps(json_data, indent=2), encoding='utf-8')
             logger.info("✅ JSON data saved to %s", json_path)
@@ -101,7 +110,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Sonarr Calendar Tracker")
     parser.add_argument('--once', action='store_true', help='Run once and exit')
     parser.add_argument('--config', type=Path, default=None,
-                        help='Path to config file (default: searched in current dir, script dir, project root, and ~/.sonarr_calendar_config/)')
+                        help='Path to config file (default: .sonarr_calendar_config.json in current dir)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     args = parser.parse_args()
 

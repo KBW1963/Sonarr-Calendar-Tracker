@@ -1,0 +1,35 @@
+# version: '3.8'
+
+services:
+  sonarr-calendar:
+    image: tomita2022/sonarr-calendar:latest
+    container_name: sonarr_calendar
+    restart: unless-stopped
+    environment:
+      # Required
+      - SONARR_URL=http://sonarr:8989 # URL to your Sonarr instance (use the service name 'sonarr' if it's in the same Docker network)
+      - SONARR_API_KEY=your_super_secret_key # API key from Sonarr (Settings > General > Security)
+      - DAYS_PAST=7 # Previous number of days : default 7
+      - DAYS_FUTURE=30 # Days in the future : default 30
+      - OUTPUT_HTML_FILE=/output/sonarr_calendar.html # output HTML file path (must be in a mounted volume)
+      # Optional (with defaults shown)
+      # - OUTPUT_JSON_FILE=/output/sonarr_data.json        # optional – legecy from previous version remove if not wanted
+      - IMAGE_CACHE_DIR=/cache # default: sonarr_images
+      - REFRESH_INTERVAL_HOURS=6 # default: 6
+      - HTML_THEME=dark # default: dark
+      - GRID_COLUMNS=4 # default: 4 (Experimental - not tested fully)
+      - IMAGE_QUALITY=fanart # default: fanart
+      - ENABLE_IMAGE_CACHE=true # default: true
+      - HTML_TITLE="My Sonarr Dashboard" # default: Sonarr Calendar Pro
+      - TZ=<Enter your TZ> # for correct log timestamps
+    volumes:
+      # Mount a directory for the generated HTML
+      - ./output:/output
+      # Mount a directory for cached images
+      - ./cache:/cache
+    networks:
+      - sonarr-network
+
+networks:
+  sonarr-network:
+    driver: bridge

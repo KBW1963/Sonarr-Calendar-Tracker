@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, date, timezone
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
 
+logger = logging.getLogger(__name__)
+
 # ----------------------------------------------------------------------------
 # Graceful Interrupt Handler
 # ----------------------------------------------------------------------------
@@ -21,7 +23,7 @@ class GracefulInterruptHandler:
         if not self.interrupt_received:
             self.interrupt_received = True
             print("\n\n⚠️  Interrupt received - Cleaning up...")
-            raise KeyboardInterrupt   # immediate interrupt
+            raise KeyboardInterrupt
         else:
             print("\n❌ Force exit")
             sys.exit(1)
@@ -104,20 +106,84 @@ def get_progress_bar_color(pct: float) -> str:
 def get_episode_badge(episode, season_episode_counts: Dict[int, int] = None) -> Optional[Dict[str, Any]]:
     """
     Determine if episode is a premiere or finale and return badge info.
-    episode can be a dict or an Episode object.
+    First uses Sonarr's episodeType if available (from the episode object or dict),
+    otherwise falls back to heuristics (episode 1 = premiere, last episode = finale).
+    As a fallback, any episode with season_number == 0 is considered a Special.
     """
-    if hasattr(episode, 'season_number'):
-        # Episode object
+    # Get episode type if present (from Episode object or dict)
+    if hasattr(episode, 'episode_type'):
+        ep_type = episode.episode_type
         season_number = episode.season_number
         episode_number = episode.episode_number
     else:
+        ep_type = episode.get('episodeType')
         season_number = episode.get('seasonNumber')
         episode_number = episode.get('episodeNumber')
 
+    # If Sonarr provided an episode type, use it directly
+    if ep_type:
+        # Mapping from Sonarr episode types to badge info
+        type_map = {
+            'seasonPremiere': {
+                'type': 'premiere',
+                'text': 'Season Premiere',
+                'color': '#00FF00',
+                'icon': 'fa-star'
+            },
+            'seriesPremiere': {
+                'type': 'series-premiere',
+                'text': 'Series Premiere',
+                'color': '#FFD700',
+                'icon': 'fa-star'
+            },
+            'midSeasonPremiere': {
+                'type': 'midseason-premiere',
+                'text': 'Mid‑Season Premiere',
+                'color': '#00CED1',
+                'icon': 'fa-star-half-alt'
+            },
+            'seasonFinale': {
+                'type': 'season-finale',
+                'text': 'Season Finale',
+                'color': '#FFA500',
+                'icon': 'fa-flag'
+            },
+            'midSeasonFinale': {
+                'type': 'midseason-finale',
+                'text': 'Mid‑Season Finale',
+                'color': '#FF8C00',
+                'icon': 'fa-flag-checkered'
+            },
+            'seriesFinale': {
+                'type': 'series-finale',
+                'text': 'Series Finale',
+                'color': '#FF0000',
+                'icon': 'fa-flag-checkered'
+            },
+            'special': {
+                'type': 'special',
+                'text': 'Special',
+                'color': '#9C27B0',
+                'icon': 'fa-gem'
+            },
+        }
+        if ep_type in type_map:
+            return type_map[ep_type]
+
+    # Fallback for specials (season 0) even if episodeType is missing
+    if season_number == 0:
+        return {
+            'type': 'special',
+            'text': 'Special',
+            'color': '#9C27B0',
+            'icon': 'fa-gem'
+        }
+
+    # Fallback heuristics (for older Sonarr versions or missing episodeType)
     if not season_number or not episode_number:
         return None
 
-    # Premiere
+    # Premiere (episode 1)
     if episode_number == 1:
         return {
             'type': 'premiere',
@@ -126,7 +192,7 @@ def get_episode_badge(episode, season_episode_counts: Dict[int, int] = None) -> 
             'icon': 'fa-star'
         }
 
-    # Season finale
+    # Season finale (using season episode counts)
     if season_episode_counts and season_number in season_episode_counts:
         if episode_number == season_episode_counts[season_number]:
             return {
@@ -136,7 +202,7 @@ def get_episode_badge(episode, season_episode_counts: Dict[int, int] = None) -> 
                 'icon': 'fa-flag'
             }
 
-    # Series finale detection not implemented here (needs seasonCount)
+    # Series finale detection would require additional data (seasonCount) – not implemented here
     return None
 
 def get_days_class(days: int) -> str:

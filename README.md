@@ -7,7 +7,7 @@
 A beautiful, feature‑rich HTML dashboard for your [Sonarr](http://sonarr.tv) shows.  
 Track upcoming episodes over a specified date range, monitor overall progress, and see which seasons have been completed – all in a sleek, customisable interface.
 
-### [Screenshot] - [https://github.com/KBW1963/main/sonarr_calendar_screenshot.png](https://github.com/KBW1963/sonarr_calendar/blob/main/sonarr_calendar_screenshot.png)
+### [Screenshot](https://github.com/KBW1963/sonarr_calendar/blob/main/sonarr_calendar_screenshot.png)
 
 ---
 **NOTE: I am not a SW developer or a coder by trade. I have a little knowledge to be dangerous and have used some skills from my past working life and my hobbyist approach to build this project. 

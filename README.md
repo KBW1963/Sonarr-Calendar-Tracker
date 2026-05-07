@@ -13,7 +13,9 @@ Track upcoming episodes over a specified date range, monitor overall progress, a
 **NOTE: I am not a SW developer or a coder by trade. I have a little knowledge to be dangerous and have used some skills from my past working life and my hobbyist approach to build this project. 
 And YES! a lot of research was needed to help me understand and develop the code, along with some AI suggestions, which to be fair is hard to not do with search engines today.
 
-The tracker has been designed to run locally on your own hardware and network. It hasn't been designed to be exposed to the outside world. I have the Tracker running on a LXC under Proxmox. The HTML file is saved to an SMB share hosted on TrueNAS (where my ARR stack is deployed). The HTML is then accessed via a dashboard. Deployment has been tested via x64 (hence GUI config version) and Linux (config cli version which BTW is cross-platform).
+The tracker has been designed to run locally on your own hardware and network. It hasn't been designed to be exposed to the outside world. I have the Tracker running as a Docker container under Dockge (I was 
+playing with it also) on TrueNAS. The HTML file is saved to an SMB share hosted on TrueNAS (where my *ARR stack is deployed). The HTML is then accessed via my homelab dashboard [Homepage](https://gethomepage.dev). 
+Ther are two deployments and both have been tested via x64 (hence GUI config version) and Linux (config cli version which BTW is cross-platform).
 
 I am happy with it for my needs and will NOT be constantly developing it, sorry 😞. 
 
@@ -33,7 +35,7 @@ So, please be understanding! ☺️.
 - ⌨️ **Graceful interrupt handling** – Press `Ctrl+C` once to exit cleanly, twice to force quit.
 - 🌍 **OS‑aware date formatting** – Dates automatically adapt to your system’s locale (e.g. `DD/MM/YYYY` or `MM/DD/YYYY`).
 - 🔗 **Direct links to Sonarr** – Click any show card to open its page in Sonarr.
-- 🔒 **Secure API key handling** – All API key inputs are masked in real‑time with asterisks.
+- 🔒 **Secure API key handling** – All API key inputs are masked in real‑time with asterisks (CLI version ONLY).
 ---
 
 ## 📦 Requirements
